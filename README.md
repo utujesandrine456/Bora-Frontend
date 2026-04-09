@@ -1,6 +1,6 @@
 🚀 BORA — AI-Powered Recruitment Platform
 
-“Where talent meets its true value”
+Where talent meets its true value
 
 🌍 Overview
 
@@ -35,12 +35,12 @@ Next.js 14	Frontend Framework
 TypeScript	Type Safety
 Tailwind CSS	Styling
 Redux Toolkit	State Management
-React Hook Form + Zod	Form & Validation
+React Hook Form + Zod	Forms & Validation
 Recharts	Data Visualization
 React Dropzone	File Uploads
 Axios	API Calls
 Vercel	Deployment
-🧠 How the AI Works (Simplified)
+🧠 How the AI Works
 Collect job details and applicant data
 Extract key information from resumes
 Compare candidates to job requirements
@@ -50,22 +50,18 @@ Generate explanations (strengths, gaps, recommendations)
 📄 Pages
 Page	Route	Description
 Auth	/login, /register	Login & Signup
-Dashboard	/dashboard	Overview & KPIs
+Dashboard	/dashboard	Overview
 Jobs	/jobs	Job listings
 Create Job	/jobs/create	Add job
 Job Details	/jobs/[id]	Run screening
-Applicants	/applicants	Upload/manage
-AI Processing	/screening/loading	AI running
+Applicants	/applicants	Manage candidates
 Results	/screening/results	Shortlist
-Candidate Details	/screening/results/[id]	Profile
-History	/history	Past screenings
 Insights	/insights	Analytics
-Settings	/settings	Preferences
 ⚙️ Getting Started
-# Clone the project
+# Clone repository
 git clone https://github.com/YOUR_ORG/bora-frontend.git
 
-# Go into the project
+# Navigate into project
 cd bora-frontend
 
 # Install dependencies
@@ -74,10 +70,10 @@ npm install
 # Setup environment variables
 cp .env.local.example .env.local
 
-# Start development server
+# Run development server
 npm run dev
 
-👉 Open: http://localhost:3000
+Open 👉 http://localhost:3000
 
 🔐 Environment Variables
 
@@ -87,7 +83,7 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api
 NEXTAUTH_SECRET=your_secret_here
 NEXTAUTH_URL=http://localhost:3000
 
-⚠️ Do not commit .env.local
+⚠️ Never commit .env.local
 
 🌿 Git Workflow
 Branch Structure
@@ -102,30 +98,23 @@ john
 alice
 eric
 Workflow
-# Get latest code
 git checkout dev
 git pull origin dev
 
-# Create your branch
 git checkout -b your-name
 
-# Work and commit
 git add .
 git commit -m "feat: add feature"
 
-# Push
 git push origin your-name
 
-# Open Pull Request → dev
-Rules
-❌ Do not push directly to main
-❌ Do not merge directly to main
-✅ Always merge into dev first
+👉 Then open Pull Request → dev
+
 📏 Code Standards
-TypeScript only
-Tailwind CSS only
-Clean and modular code
-Reusable components
+Use TypeScript only
+Use Tailwind CSS only
+Write clean, modular code
+Reuse components
 📦 Scripts
 npm run dev
 npm run build
@@ -135,11 +124,11 @@ npm run format
 Hosted on Vercel
 Auto-deploy on merge to main
 
-🌐 https://bora-ai.vercel.app
+Live URL: https://bora-ai.vercel.app
 
 🏆 Hackathon Goal
 
-To deliver a production-ready AI recruitment system that stands out in:
+Build a production-ready AI recruitment system that excels in:
 
 Real-world impact
 AI explainability
@@ -147,4 +136,4 @@ Engineering quality
 User experience
 👥 Team
 
-Built by Team BORA for the Umurava AI Hackathon 2026 🚀
+Built by Team BORA for Umurava AI Hackathon 2026 🚀
