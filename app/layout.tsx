@@ -7,7 +7,7 @@ import { Toaster } from "react-hot-toast";
 const outfit = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "BORA - Jobs Dashboard",
+  title: "BORA - AI Recruitment Platform",
   description: "Advanced Recruitment Platform",
 };
 
