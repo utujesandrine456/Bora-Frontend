@@ -28,13 +28,14 @@ const menuItems: MenuItem[] = [
   { name: 'Screening Results', icon: ClipboardCheck, href: '/screening' },
   { name: 'Screening History', icon: History, href: '/screening-history' },
   { name: 'Candidate Insights', icon: BarChart3, href: '/insights' },
+  { name: 'Profile', icon: Users, href: '/profile' },
   { name: 'Settings', icon: Settings, href: '/settings' },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
 
-  if (pathname === '/') return null;
+  if (pathname === '/' || pathname.startsWith('/auth')) return null;
 
   return (
     <div className="w-[280px] min-h-screen h-full bg-dark flex flex-col p-6 border-r border-cream/20 sticky top-0">
