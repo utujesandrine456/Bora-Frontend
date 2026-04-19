@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { 
-  Users, 
-  Briefcase, 
-  ClipboardCheck, 
-  TrendingUp, 
-  ArrowUpRight, 
+import {
+  Users,
+  Briefcase,
+  ClipboardCheck,
+  TrendingUp,
+  ArrowUpRight,
   ArrowDownRight,
   Clock,
   ChevronRight,
@@ -18,35 +18,35 @@ import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 
 const STATS = [
-  { 
-    label: 'Total Applicants', 
-    value: '2,840', 
-    change: '+12.5%', 
-    trend: 'up', 
+  {
+    label: 'Total Applicants',
+    value: '2,840',
+    change: '+12.5%',
+    trend: 'up',
     icon: Users,
     description: 'Updated 2 hours ago'
   },
-  { 
-    label: 'Active Jobs', 
-    value: '12', 
-    change: '+2', 
-    trend: 'up', 
+  {
+    label: 'Active Jobs',
+    value: '12',
+    change: '+2',
+    trend: 'up',
     icon: Briefcase,
     description: '3 ending this week'
   },
-  { 
-    label: 'Screening Tasks', 
-    value: '156', 
-    change: '-5%', 
-    trend: 'down', 
+  {
+    label: 'Screening Tasks',
+    value: '156',
+    change: '-5%',
+    trend: 'down',
     icon: ClipboardCheck,
     description: '45 pending review'
   },
-  { 
-    label: 'Conversion Rate', 
-    value: '18.4%', 
-    change: '+2.1%', 
-    trend: 'up', 
+  {
+    label: 'Conversion Rate',
+    value: '18.4%',
+    change: '+2.1%',
+    trend: 'up',
     icon: TrendingUp,
     description: 'Industry avg: 12.5%'
   },
@@ -70,15 +70,15 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-cream/10 pb-8">
           <div>
             <h1 className="text-4xl md:text-5xl font-black text-cream tracking-tight mb-2">Workspace Overview</h1>
-            <p className="text-cream/60 font-medium text-lg italic serif">Welcome back, Sarah. Here's what's happening today.</p>
+            <p className="text-cream/60 font-medium text-lg italic serif">Welcome back, Sarah. Here&apos;s what&apos;s happening today.</p>
           </div>
-            <div className="text-right">
-              <div className="text-[11px] text-cream/40 font-bold tracking-wider mb-1">Status</div>
-              <div className="text-sm font-bold text-cream flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live Analysis
-              </div>
+          <div className="text-right">
+            <div className="text-[11px] text-cream/40 font-bold tracking-wider mb-1">Status</div>
+            <div className="text-sm font-bold text-cream flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live Analysis
             </div>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -140,11 +140,10 @@ export default function DashboardPage() {
                         <div className="text-sm font-medium text-cream/60">{applicant.role}</div>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <div className={`inline-flex items-center justify-center w-10 h-10 rounded-md border text-sm font-black ${
-                          applicant.score >= 90 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 
-                          applicant.score >= 80 ? 'bg-cream/10 border-cream/20 text-cream' : 
-                          'bg-amber-500/10 border-amber-500/20 text-amber-500'
-                        }`}>
+                        <div className={`inline-flex items-center justify-center w-10 h-10 rounded-md border text-sm font-black ${applicant.score >= 90 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
+                            applicant.score >= 80 ? 'bg-cream/10 border-cream/20 text-cream' :
+                              'bg-amber-500/10 border-amber-500/20 text-amber-500'
+                          }`}>
                           {applicant.score}
                         </div>
                       </td>
@@ -178,7 +177,7 @@ export default function DashboardPage() {
                   <div className="text-[11px] text-cream/40">Efficiency report</div>
                 </div>
               </div>
-              
+
               <div className="space-y-5">
                 <div className="flex items-end justify-between mb-1">
                   <div className="text-xs font-bold text-cream/60">Time to Hire</div>
@@ -188,7 +187,7 @@ export default function DashboardPage() {
                   <div className="h-full bg-cream w-[65%]" />
                 </div>
                 <p className="text-xs text-cream/50 leading-relaxed italic">
-                  You're currently <span className="text-emerald-500 font-bold">12% faster</span> than last month. 
+                  You&apos;re currently <span className="text-emerald-500 font-bold">12% faster</span> than last month.
                   High-score applicants are responding 20% quicker.
                 </p>
               </div>
@@ -206,7 +205,7 @@ export default function DashboardPage() {
                 <div key={i} className="flex items-center gap-3 group cursor-pointer">
                   <div className="w-2 h-2 rounded-full bg-amber-500/40 group-hover:bg-amber-500 transition-colors" />
                   <div className="flex-1">
-                    <div className="text-sm font-bold text-cream/80 group-hover:text-cream transition-colors">Screening #J-00{i+2}</div>
+                    <div className="text-sm font-bold text-cream/80 group-hover:text-cream transition-colors">Screening #J-00{i + 2}</div>
                     <div className="text-[10px] text-cream/40 flex items-center gap-1">
                       <Clock className="w-2 h-2" /> 4h pending
                     </div>

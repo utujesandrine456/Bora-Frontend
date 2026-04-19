@@ -58,8 +58,8 @@ export default function SettingsPage() {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition-all font-semibold cursor-pointer ${isActive
-                        ? 'bg-cream text-dark shadow-md'
-                        : 'text-cream/60 hover:text-cream hover:bg-cream/10'
+                      ? 'bg-cream text-dark shadow-md'
+                      : 'text-cream/60 hover:text-cream hover:bg-cream/10'
                       }`}
                   >
                     <Icon className={`w-5 h-5 ${isActive ? 'text-dark' : 'opacity-70'}`} />
@@ -108,7 +108,7 @@ export default function SettingsPage() {
                 <Card className="p-8 space-y-8">
                   <div>
                     <h2 className="text-2xl font-bold text-cream mb-1">Company Details</h2>
-                    <p className="text-cream/50 text-sm font-medium">Manage your organization's core information.</p>
+                    <p className="text-cream/50 text-sm font-medium">Manage your organization&apos;s core information.</p>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6">

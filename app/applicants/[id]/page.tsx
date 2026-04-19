@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Linkedin, 
-  Github, 
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Linkedin,
+  Github,
   ExternalLink,
   ChevronLeft,
   Calendar,
@@ -110,7 +110,7 @@ const CANDIDATE = {
 
 export default function CandidateDetailsPage() {
   const params = useParams();
-  
+
   return (
     <div className="flex flex-col h-full bg-dark min-h-screen pb-20">
       <TopNav />
@@ -341,7 +341,7 @@ export default function CandidateDetailsPage() {
 
                 <div className="mt-4 p-4 bg-dark/40 rounded border border-cream/10">
                   <div className="text-[10px] font-bold text-cream/40 tracking-wider mb-2">Requirement parity</div>
-                  <div className="text-sm italic text-cream/80 font-medium">"{CANDIDATE.aiInsights.parity}"</div>
+                  <div className="text-sm italic text-cream/80 font-medium">&quot;{CANDIDATE.aiInsights.parity}&quot;</div>
                 </div>
               </Card>
             </section>
@@ -369,7 +369,7 @@ export default function CandidateDetailsPage() {
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="pt-4 border-t border-cream/10">
                   <h3 className="text-[10px] font-bold text-cream/40 tracking-widest mb-3">Languages</h3>
                   <div className="flex flex-wrap gap-2">
