@@ -1,79 +1,72 @@
-'use client';
-
 import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Briefcase, 
   Users, 
   ClipboardCheck, 
   History, 
-  BarChart3, 
-  Settings,
-  LucideIcon,
-  Layers
+  LineChart, 
+  Settings
 } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Logo } from './Logo';
 
-interface MenuItem {
-  name: string;
-  icon: LucideIcon;
-  href: string;
-}
-
-const menuItems: MenuItem[] = [
-  { name: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
-  { name: 'Jobs', icon: Briefcase, href: '/jobs' },
-  { name: 'Applicants', icon: Users, href: '/applicants' },
-  { name: 'Screening Results', icon: ClipboardCheck, href: '/screening-results' },
-  { name: 'Screening History', icon: History, href: '/screening-history' },
-  { name: 'Candidate Insights', icon: BarChart3, href: '/insights' },
-  { name: 'Settings', icon: Settings, href: '/settings' },
+const navItems = [
+  { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
+  { icon: Briefcase, label: 'Job Clips', href: '/jobs' },
+  { icon: Users, label: 'Applicants', href: '/applicants' },
+  { icon: ClipboardCheck, label: 'Match Results', href: '/screening-results' },
+  { icon: History, label: 'Screening History', href: '/screening-history' },
+  { icon: LineChart, label: 'Analytics', href: '/candidate-insights' },
+  { icon: Settings, label: 'Settings', href: '/settings' },
 ];
 
-export default function Sidebar() {
+export const Sidebar = () => {
   const pathname = usePathname();
 
   return (
-    <div className="w-[280px] min-h-screen h-full bg-[#071e2d] flex flex-col p-6 border-r border-white/5 sticky top-0">
-      <div className="mb-10 flex items-center gap-3 px-2">
-        <div className="w-10 h-10 bg-[#38bdf8] rounded-xl flex items-center justify-center shadow-lg shadow-[#38bdf8]/20">
-          <Layers className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-black text-white tracking-tight leading-none">BORA</h1>
-          <p className="text-[10px] text-[#38bdf8] font-black uppercase tracking-[0.2em] mt-1">Platform</p>
-        </div>
+    <div className="relative w-72 flex-shrink-0 bg-black border-r border-[#E5D4B6]/10 flex flex-col h-screen font-sans overflow-hidden group/sidebar transition-all duration-700 z-20">
+      
+      <div className="relative z-10 p-8 pt-10">
+        <Logo />
+        <div className="h-1 w-8 bg-bora-accent mt-4 rounded-full opacity-30" />
       </div>
 
-      <nav className="flex-1 space-y-2">
-        {menuItems.map((item) => {
-          const isActive = pathname === item.href || (item.name === 'Jobs' && pathname === '/');
-          const Icon = item.icon;
-          
+      <nav className="relative z-10 flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
           return (
             <Link
-              key={item.name}
+              key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all duration-300 group cursor-pointer ${
+              className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all duration-500 group relative overflow-hidden ${
                 isActive 
-                  ? 'bg-[#38bdf8] text-white shadow-lg shadow-[#38bdf8]/20' 
-                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                  ? 'bg-bora-accent text-black shadow-lg translate-x-1 ring-1 ring-bora-accent/20' 
+                  : 'text-[#E5D4B6]/50 hover:bg-bora-accent/5 hover:text-bora-accent hover:ring-1 hover:ring-[#E5D4B6]/10'
               }`}
             >
-              <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-[#38bdf8]'}`} />
-              <span className="font-normal text-[15px]">{item.name}</span>
+              <item.icon className={`transition-all duration-500 relative z-10 ${isActive ? 'scale-110 drop-shadow-md' : 'group-hover:scale-110 group-hover:rotate-6'}`} size={20} />
+              <span className={`text-sm tracking-tight uppercase font-black transition-all duration-500 relative z-10 ${isActive ? 'translate-x-1' : 'group-hover:translate-x-1'}`}>
+                {item.label}
+              </span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto pt-6 border-t border-white/5">
-        <button className="flex items-center gap-3 px-5 py-3.5 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all w-full group cursor-pointer">
-          <History className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-          <span className="font-normal text-[15px]">Logout</span>
-        </button>
+      <div className="relative z-10 p-6">
+        <div className="bg-black rounded-[2rem] p-6 border border-[#E5D4B6]/10 shadow-2xl relative overflow-hidden group/quota transition-all duration-500 hover:shadow-lg hover:-translate-y-1">
+          <p className="text-[9px] font-black text-[#E5D4B6]/30 uppercase tracking-[0.2em] mb-3">CV Analysis Used</p>
+          <div className="flex items-end justify-between mb-2">
+            <span className="text-2xl font-black text-bora-accent tracking-tighter">65%</span>
+            <span className="text-[10px] font-bold text-[#E5D4B6]/40">650 / 1000</span>
+          </div>
+          <div className="h-1.5 w-full bg-[#E5D4B6]/10 rounded-full overflow-hidden">
+            <div className="h-full bg-bora-accent w-[65%] rounded-full shadow-sm" />
+          </div>
+        </div>
       </div>
     </div>
   );
-}
+};
