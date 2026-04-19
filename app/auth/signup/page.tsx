@@ -21,7 +21,7 @@ export default function SignupPage() {
             <div className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden bg-linear-to-br from-cream/10 via-dark to-dark">
                 <div className="relative z-10">
                     <Link href="/" className="inline-flex items-center gap-3 group">
-                        <div className="w-10 h-10 border-2 border-cream bg-dark rounded-md flex items-center justify-center transition-transform hover:rotate-12 duration-500 overflow-hidden">
+                        <div className="w-10 h-10 border-2 border-cream bg-dark rounded-full flex items-center justify-center transition-transform hover:rotate-12 duration-500 overflow-hidden">
                             <img src="/logo.png" alt="BORA Logo" className="w-full h-full object-cover" />
                         </div>
                         <span className="text-3xl font-black tracking-widest uppercase text-cream">
@@ -80,7 +80,7 @@ export default function SignupPage() {
                 >
                     <div className="lg:hidden text-center mb-10">
                         <Link href="/" className="inline-flex items-center gap-3 group">
-                            <div className="w-10 h-10 border border-cream bg-dark rounded-lg flex items-center justify-center overflow-hidden">
+                            <div className="w-10 h-10 border border-cream bg-dark rounded-full flex items-center justify-center overflow-hidden">
                                 <img src="/logo.png" alt="BORA Logo" className="w-full h-full object-cover" />
                             </div>
                             <span className="text-2xl font-black uppercase text-cream">BORA</span>

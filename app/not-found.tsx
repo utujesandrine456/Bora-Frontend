@@ -38,7 +38,7 @@ export default function NotFound() {
                 transition={{ duration: 0.6 }}
                 className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-3 z-10"
             >
-                <div className="w-10 h-10 border border-cream/20 rounded-md flex items-center justify-center overflow-hidden grayscale opacity-40">
+                <div className="w-10 h-10 border border-cream/20 rounded-full flex items-center justify-center overflow-hidden grayscale opacity-40">
                     <img src="/logo.png" alt="BORA Logo" className="w-full h-full object-cover" />
                 </div>
                 <span className="text-xl font-black tracking-widest uppercase text-cream/60">BORA</span>
@@ -106,16 +106,10 @@ export default function NotFound() {
                 >
                     <Link
                         href="/"
-                        className="inline-flex items-center justify-center gap-3 bg-cream text-dark px-8 py-4 rounded-md font-semibold uppercase tracking-wider hover:bg-white transition-all duration-300 shadow-xl shadow-cream/10"
+                        className="inline-flex items-center justify-center gap-3 bg-cream text-dark px-8 py-4 rounded-md font-semibold hover:bg-white transition-all duration-300 shadow-xl shadow-cream/10"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         Back to Home
-                    </Link>
-                    <Link
-                        href="/dashboard"
-                        className="inline-flex items-center justify-center border border-cream/30 text-cream px-8 py-4 rounded-md font-semibold uppercase tracking-wider hover:bg-cream/10 transition-all duration-300"
-                    >
-                        Go to Dashboard
                     </Link>
                 </motion.div>
 

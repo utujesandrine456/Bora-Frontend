@@ -28,7 +28,7 @@ export default function Header() {
         >
             <div className="max-w-7xl mx-auto px-10 h-full flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-3 group">
-                    <div className="w-10 h-10 border border-cream bg-dark rounded-md flex items-center justify-center transition-transform group-hover:rotate-12 duration-500 overflow-hidden">
+                    <div className="w-10 h-10 border border-cream bg-dark rounded-full flex items-center justify-center transition-transform group-hover:rotate-12 duration-500 overflow-hidden">
                         <img src="/logo.png" alt="BORA Logo" className="w-full h-full object-cover" />
                     </div>
                     <span className="text-2xl font-black tracking-widest uppercase text-cream hidden sm:block">

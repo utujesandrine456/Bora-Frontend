@@ -17,7 +17,9 @@ import {
   CheckCircle2,
   AlertCircle,
   FileText,
-  Download
+  Download,
+  Code2,
+  Globe
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -79,7 +81,31 @@ const CANDIDATE = {
       'No formal management certification (though led teams)'
     ],
     parity: '9.8/10 correlation with job description requirements.'
-  }
+  },
+  projects: [
+    {
+      name: 'Distributed Cache Service',
+      description: 'A high-performance distributed caching service built with Go and Redis, achieving 99.99% uptime and handling 50k req/s.',
+      technologies: ['Go', 'Redis', 'Docker'],
+      link: 'https://github.com/example/cache',
+      year: '2020'
+    },
+    {
+      name: 'Cloud Infrastructure Automation',
+      description: 'Terraform modules for zero-downtime deployments on AWS, reducing deployment time by 60%.',
+      technologies: ['Terraform', 'AWS', 'Python'],
+      link: 'https://github.com/example/infra',
+      year: '2022'
+    }
+  ],
+  certifications: [
+    { name: 'AWS Certified Solutions Architect - Professional', issuer: 'Amz Web Services', year: '2023' },
+    { name: 'Certified Kubernetes Administrator (CKA)', issuer: 'CNCF', year: '2022' }
+  ],
+  languages: [
+    { name: 'English', proficiency: 'Native' },
+    { name: 'French', proficiency: 'Professional Working' }
+  ]
 };
 
 export default function CandidateDetailsPage() {
@@ -92,9 +118,9 @@ export default function CandidateDetailsPage() {
       <div className="flex-1 p-8 max-w-7xl mx-auto w-full space-y-8">
         {/* Navigation & Actions */}
         <div className="flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2 text-cream/40 hover:text-cream transition-colors group">
+          <Link href="/applicants" className="flex items-center gap-2 text-cream/40 hover:text-cream transition-colors group">
             <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-            <span className="font-bold">Back to Dashboard</span>
+            <span className="font-bold">Back</span>
           </Link>
           <div className="flex items-center gap-3">
             <Button variant="secondary" className="gap-2">
@@ -207,6 +233,43 @@ export default function CandidateDetailsPage() {
                 ))}
               </div>
             </section>
+
+            {/* Projects */}
+            <section className="space-y-4">
+              <h2 className="text-xl font-bold text-cream flex items-center gap-2 px-1">
+                <Code2 className="w-5 h-5 text-cream/40" />
+                Featured Projects
+              </h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                {CANDIDATE.projects.map((project, i) => (
+                  <div key={i} className="flex flex-col p-5 border border-cream/10 bg-dark/30 rounded-md group hover:border-cream/30 transition-colors">
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="font-bold text-cream text-md leading-tight group-hover:text-cream transition-colors">{project.name}</h3>
+                      {project.link && (
+                        <a href={project.link} target="_blank" rel="noopener noreferrer" className="text-cream/40 hover:text-cream transition-colors shrink-0">
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
+                    <p className="text-sm text-cream/50 leading-relaxed font-medium mb-4 flex-1">
+                      {project.description}
+                    </p>
+                    <div className="space-y-3 mt-auto">
+                      <div className="flex flex-wrap gap-2">
+                        {project.technologies.map(tech => (
+                          <span key={tech} className="text-[10px] font-bold text-cream/60 bg-cream/5 px-2 py-1 rounded border border-cream/10">
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="text-[10px] font-bold text-cream/30 pt-3 border-t border-cream/5 flex items-center gap-1.5">
+                        <Calendar className="w-3 h-3" /> {project.year}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
           </div>
 
           {/* Sidebar Insights */}
@@ -279,6 +342,44 @@ export default function CandidateDetailsPage() {
                 <div className="mt-4 p-4 bg-dark/40 rounded border border-cream/10">
                   <div className="text-[10px] font-bold text-cream/40 tracking-wider mb-2">Requirement parity</div>
                   <div className="text-sm italic text-cream/80 font-medium">"{CANDIDATE.aiInsights.parity}"</div>
+                </div>
+              </Card>
+            </section>
+
+            {/* Certifications & Languages */}
+            <section className="space-y-4">
+              <h2 className="text-xl font-bold text-cream flex items-center gap-2 px-1">
+                <Award className="w-5 h-5 text-cream/40" />
+                Credentials
+              </h2>
+              <Card className="p-6 space-y-6">
+                <div>
+                  <h3 className="text-[10px] font-bold text-cream/40 tracking-widest mb-3">Certifications</h3>
+                  <div className="space-y-3">
+                    {CANDIDATE.certifications.map((cert, i) => (
+                      <div key={i} className="flex gap-3 items-start group">
+                        <div className="p-1.5 bg-cream/5 rounded-md mt-0.5 border border-cream/10 group-hover:border-cream/30 transition-colors">
+                          <Zap className="w-3 h-3 text-cream/60" />
+                        </div>
+                        <div>
+                          <h4 className="text-[13px] font-bold text-cream leading-tight">{cert.name}</h4>
+                          <p className="text-[10px] text-cream/40 font-bold mt-1">{cert.issuer} • {cert.year}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t border-cream/10">
+                  <h3 className="text-[10px] font-bold text-cream/40 tracking-widest mb-3">Languages</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {CANDIDATE.languages.map((lang, i) => (
+                      <Badge key={i} className="bg-cream/5 text-cream border-cream/10 py-1.5 px-3">
+                        <span className="font-bold text-cream">{lang.name}</span>
+                        <span className="ml-2 text-[10px] opacity-40 italic font-medium text-cream">{lang.proficiency}</span>
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               </Card>
             </section>

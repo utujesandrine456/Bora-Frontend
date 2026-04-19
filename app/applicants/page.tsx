@@ -52,12 +52,12 @@ export default function ApplicantsPage() {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-cream/10 pb-8">
           <div>
-            <h1 className="text-4xl font-black text-cream tracking-tight mb-2">Talent Pool</h1>
+            <h1 className="text-6xl font-black text-cream tracking-tight mb-2">Applicants List</h1>
             <p className="text-cream/60 font-medium text-lg italic serif">Review and manage candidates across all active job openings.</p>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="secondary" className="gap-2">
-              <Download className="w-4 h-4" /> Export pool
+              <Download className="w-4 h-4" /> Export
             </Button>
           </div>
         </div>

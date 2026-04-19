@@ -69,7 +69,7 @@ export default function DashboardPage() {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-cream/10 pb-8">
           <div>
-            <h1 className="text-4xl font-black text-cream tracking-tight mb-2">Workspace Overview</h1>
+            <h1 className="text-4xl md:text-5xl font-black text-cream tracking-tight mb-2">Workspace Overview</h1>
             <p className="text-cream/60 font-medium text-lg italic serif">Welcome back, Sarah. Here's what's happening today.</p>
           </div>
             <div className="text-right">
@@ -194,7 +194,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="mt-8 pt-6 border-t border-cream/10">
-                <button className="w-full py-3 bg-cream text-dark font-black text-xs uppercase tracking-widest rounded-md hover:bg-white transition-all shadow-xl">
+                <button className="w-full py-3 bg-cream text-dark font-semibold text-sm rounded-md hover:bg-white transition-all shadow-xl">
                   Download Report
                 </button>
               </div>
@@ -221,3 +221,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+
