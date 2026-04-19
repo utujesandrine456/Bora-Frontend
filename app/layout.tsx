@@ -4,8 +4,6 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { Toaster } from "react-hot-toast";
 
-// Use weights 500 (medium) for normal text to satisfy requirement "not light"
-// Include 700 and 900 for bold headers
 const urbanist = Urbanist({
   subsets: ["latin"],
   weight: ["500", "700", "900"],
@@ -15,6 +13,10 @@ const urbanist = Urbanist({
 export const metadata: Metadata = {
   title: "BORA - AI Recruitment Platform",
   description: "Advanced Recruitment Platform",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

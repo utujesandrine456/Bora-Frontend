@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion, useScroll, useTransform, AnimatePresence, Variants } from 'framer-motion';
-import { Bot, ArrowRight, Zap, ShieldCheck, BrainCircuit, Send, ChevronDown, ChevronUp, UserCheck, Star } from 'lucide-react';
+import { ArrowRight, Zap, ShieldCheck, BrainCircuit, Send, ChevronDown, ChevronUp, UserCheck, Star } from 'lucide-react';
 import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 import Header from '@/components/Header';
 
@@ -345,7 +345,7 @@ export default function LandingPage() {
             </h2>
             <p className="text-xl text-cream/70 mb-12 font-serif italic">The future of hiring is objective, fast, and human-led.</p>
             <Link href="/dashboard" className="inline-flex items-center justify-center gap-4 bg-cream text-dark px-6 py-4 rounded-md text-md font-semibold hover:bg-white transition-colors">
-              Access Dashboard <ArrowRight className="w-5 h-5" />
+              Get Started <ArrowRight className="w-5 h-5" />
             </Link>
           </motion.div>
         </section>
@@ -357,7 +357,9 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-20">
             <div className="col-span-1 md:col-span-4">
               <div className="flex items-center gap-3 mb-6">
-                <Bot className="w-7 h-7 text-cream" />
+                <div className="w-10 h-10 border border-cream/30 bg-dark rounded-full flex items-center justify-center overflow-hidden">
+                  <img src="/logo.png" alt="BORA Logo" className="w-full h-full object-cover" />
+                </div>
                 <span className="text-3xl font-black tracking-widest uppercase text-cream">BORA</span>
               </div>
               <p className="text-cream/60 max-w-sm text-sm leading-relaxed mb-6">

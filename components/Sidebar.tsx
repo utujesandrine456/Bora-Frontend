@@ -9,8 +9,7 @@ import {
   History,
   BarChart3,
   Settings,
-  LucideIcon,
-  Layers
+  LucideIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -28,20 +27,23 @@ const menuItems: MenuItem[] = [
   { name: 'Screening Results', icon: ClipboardCheck, href: '/screening' },
   { name: 'Screening History', icon: History, href: '/screening-history' },
   { name: 'Candidate Insights', icon: BarChart3, href: '/insights' },
-  { name: 'Profile', icon: Users, href: '/profile' },
   { name: 'Settings', icon: Settings, href: '/settings' },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
 
-  if (pathname === '/' || pathname.startsWith('/auth')) return null;
+  const appRoutes = ['/dashboard', '/jobs', '/applicants', '/screening', '/insights', '/settings'];
+  const isAppRoute = appRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
+
+  if (!isAppRoute) return null;
+
 
   return (
     <div className="w-[280px] min-h-screen h-full bg-dark flex flex-col p-6 border-r border-cream/20 sticky top-0">
       <div className="mb-10 flex items-center gap-3 px-2">
-        <div className="w-10 h-10 border-2 border-cream bg-dark rounded-md flex items-center justify-center transition-transform hover:rotate-12 duration-500">
-          <Layers className="w-6 h-6 text-cream" />
+        <div className="w-10 h-10 border-2 border-cream bg-dark rounded-full flex items-center justify-center transition-transform hover:rotate-12 duration-500 overflow-hidden">
+          <img src="/logo.png" alt="BORA Logo" className="w-full h-full object-cover" />
         </div>
         <div>
           <h1 className="text-2xl font-black text-cream tracking-widest uppercase leading-none">BORA</h1>
