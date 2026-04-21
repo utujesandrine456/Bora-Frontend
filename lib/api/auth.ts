@@ -21,7 +21,10 @@ export const authApi = {
 
     if (typeof token === 'string' && typeof window !== 'undefined') {
       localStorage.setItem('token', token);
-      console.log('Token successfully stored in localStorage');
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+      console.log('Token and User successfully stored in localStorage');
     } else if (token) {
       console.error('Token found but it is not a string:', token);
     } else {
@@ -34,6 +37,7 @@ export const authApi = {
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
     }
   }
 };

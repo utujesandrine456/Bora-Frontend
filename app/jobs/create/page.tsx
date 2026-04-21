@@ -9,6 +9,7 @@ import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import { Input, Textarea, Select } from '@/components/ui/Input';
 import { jobsApi } from '@/lib/api/jobs';
+import { saveLocalJob } from '@/lib/localJobsStore';
 import toast from 'react-hot-toast';
 
 export default function CreateJobPage() {
@@ -59,6 +60,11 @@ export default function CreateJobPage() {
     };
 
     console.log('Publishing Job with stripped payload:', payload);
+
+    // === OPTIMISTIC LOCAL SAVE REMOVED ===
+    // We now rely on jobsApi.createJob to handle the local persistence 
+    // with the real backend ID once the call succeeds. This prevents
+    // the duplication caused by temporary 'local-' IDs.
 
     try {
       await jobsApi.createJob(payload);

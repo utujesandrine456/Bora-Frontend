@@ -69,6 +69,9 @@ export interface ScreeningResult {
   profileId: string;
   score: number;
   matchAnalysis: string;
+  skillsScore?: number;
+  experienceScore?: number;
+  educationScore?: number;
   version: number;
   createdAt: string;
 }

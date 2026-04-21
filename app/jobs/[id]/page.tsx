@@ -1,6 +1,6 @@
 'use client';
 
-import React, { use, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import {
   MapPin,
   Calendar,
@@ -14,6 +14,9 @@ import TopNav from '@/components/TopNav';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
+import toast from 'react-hot-toast';
+import { jobsApi } from '@/lib/api/jobs';
+import { screeningApi } from '@/lib/api/screening';
 
 // Types for Job Data
 interface Applicant {
@@ -151,10 +154,7 @@ const JOBS_METADATA: Record<string, Job> = {
   }
 };
 
-import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import { jobsApi } from '@/lib/api/jobs';
-import { screeningApi } from '@/lib/api/screening';
+
 
 export default function JobDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

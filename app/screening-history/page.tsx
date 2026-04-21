@@ -24,6 +24,7 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { jobsApi } from '@/lib/api/jobs';
 import toast from 'react-hot-toast';
+import { downloadAsFile, jsonToCsv } from '@/lib/utils/download';
 
 // Mock Data fallback removed
 
@@ -45,11 +46,11 @@ export default function ScreeningHistoryPage() {
                     return;
                 }
 
-                const mapped = jobs.map((job: any) => ({
-                    id: job._id,
+                const mapped = jobs.map((job: any, index: number) => ({
+                    id: job._id || job.id || `history-${index}`,
                     role: job.title,
                     date: job.updatedAt || job.createdAt,
-                    candidates: Math.floor(Math.random() * 20), // Placeholder
+                    candidates: job.applicantsCount ?? Math.floor(Math.random() * 20),
                     avgScore: 85, // Placeholder
                     topMatch: 'Top Talent',
                     status: 'Completed',
@@ -65,6 +66,24 @@ export default function ScreeningHistoryPage() {
         };
         fetchHistory();
     }, []);
+
+    const handleExportHistory = () => {
+        if (!history || !history.length) return toast.error('No history to export');
+        
+        const exportData = history.map(item => ({
+            ID: item.id,
+            Role: item.role,
+            Date: item.date ? new Date(item.date).toLocaleDateString() : 'N/A',
+            Candidates: item.candidates,
+            AvgScore: `${item.avgScore}%`,
+            TopMatch: item.topMatch,
+            Status: item.status
+        }));
+
+        const csvContent = jsonToCsv(exportData);
+        downloadAsFile(`screening_history_${new Date().toISOString().split('T')[0]}.csv`, csvContent, 'text/csv');
+        toast.success('Screening history exported as CSV');
+    };
 
     const filteredHistory = history.filter(item => 
         item.role.toLowerCase().includes(searchQuery.toLowerCase())
@@ -152,7 +171,11 @@ export default function ScreeningHistoryPage() {
                             <ChevronDown className="w-3 h-3 group-hover:translate-y-0.5 transition-transform" />
                         </div>
 
-                        <button className="p-2.5 bg-cream/10 border border-cream/10 rounded-md hover:bg-cream/20 text-cream transition-colors">
+                        <button 
+                            onClick={handleExportHistory}
+                            className="p-2.5 bg-cream/10 border border-cream/10 rounded-md hover:bg-cream/20 text-cream transition-colors"
+                            title="Export History"
+                        >
                             <Download className="w-4 h-4" />
                         </button>
                     </div>

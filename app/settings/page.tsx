@@ -17,6 +17,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import { Input, Select } from '@/components/ui/Input';
+import toast from 'react-hot-toast';
 
 const TABS = [
   { id: 'general', label: 'General Info', icon: User },
@@ -26,10 +27,56 @@ const TABS = [
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('general');
+  const [user, setUser] = useState<{ name: string; email: string; role: string; photo?: string } | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (e) {
+          console.error('Failed to parse user');
+        }
+      }
+    }
+  }, []);
+
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && user) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        const updatedUser = { ...user, photo: base64String };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        toast.success('Profile photo updated');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name?.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
+  };
+
+  const displayName = user?.name || 'User';
+  const firstName = displayName.split(' ')[0] || '';
+  const lastName = displayName.split(' ').slice(1).join(' ') || '';
 
   return (
     <div className="flex flex-col h-full bg-dark min-h-screen">
       <TopNav />
+
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        className="hidden" 
+        accept="image/*" 
+        onChange={handlePhotoChange} 
+      />
 
       <div className="flex-1 p-8 max-w-7xl mx-auto w-full">
         {/* Header Section */}
@@ -84,24 +131,31 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-6 pb-6 border-b border-cream/10">
                     <div className="relative group">
                       <div className="w-24 h-24 rounded-full bg-cream/10 border-2 border-cream/20 flex items-center justify-center text-3xl font-black text-cream overflow-hidden">
-                        AC
+                        {user?.photo ? (
+                          <img src={user.photo} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          getInitials(displayName)
+                        )}
                       </div>
-                      <button className="absolute inset-0 rounded-full bg-dark/60 text-cream text-[10px] uppercase font-bold tracking-widest flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute inset-0 rounded-full bg-dark/60 text-cream text-[10px] uppercase font-bold tracking-widest flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
                         Change
                       </button>
                     </div>
                     <div>
-                      <div className="text-cream font-bold text-lg mb-1">Alexander Chen</div>
-                      <div className="text-cream/50 text-sm font-medium mb-3">alexander@boratech.co</div>
-                      <span className="text-[10px] font-bold text-cream/40 bg-cream/10 px-3 py-1 rounded">Admin Account</span>
+                      <div className="text-cream font-bold text-lg mb-1">{displayName}</div>
+                      <div className="text-cream/50 text-sm font-medium mb-3">{user?.email || 'email@boratech.co'}</div>
+                      <span className="text-[10px] font-bold text-cream/40 bg-cream/10 px-3 py-1 rounded">{user?.role || 'User Account'}</span>
                     </div>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6 pt-2">
-                    <Input label="First Name" defaultValue="Alexander" icon={User} />
-                    <Input label="Last Name" defaultValue="Chen" icon={User} />
-                    <Input label="Email Address" defaultValue="alexander@boratech.co" icon={Mail} />
-                    <Input label="Role" defaultValue="Head of Recruitment" icon={Building2} />
+                    <Input label="First Name" defaultValue={firstName} icon={User} />
+                    <Input label="Last Name" defaultValue={lastName} icon={User} />
+                    <Input label="Email Address" defaultValue={user?.email || ''} icon={Mail} />
+                    <Input label="Role" defaultValue={user?.role || ''} icon={Building2} />
                   </div>
                 </Card>
 

@@ -1,9 +1,37 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import { Search, Bell } from 'lucide-react';
 import Link from 'next/link';
 
 export default function TopNav() {
+  const [user, setUser] = useState<{ name: string; role: string; photo?: string } | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (e) {
+          console.error('Failed to parse user from localStorage');
+        }
+      }
+    }
+  }, []);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const displayName = user?.name || 'User';
+  const displayRole = user?.role || 'Guest';
 
   return (
     <>
@@ -27,14 +55,18 @@ export default function TopNav() {
 
           <div className="flex items-center gap-5 pl-6 border-l border-cream/20">
             <div className="flex flex-col items-end">
-              <span className="text-sm font-bold text-cream">Sarah Chen</span>
-              <span className="text-xs text-cream/60 font-medium">HR Manager</span>
+              <span className="text-sm font-bold text-cream underline decoration-cream/20 underline-offset-4">{displayName}</span>
+              <span className="text-xs text-cream/60 font-medium uppercase tracking-widest">{displayRole}</span>
             </div>
             <div className="flex items-center gap-2 cursor-pointer group">
-              <div className="w-10 h-10 bg-cream flex items-center justify-center rounded-md overflow-hidden border border-cream">
-                <div className="w-full h-full bg-cream flex items-center justify-center text-dark font-bold text-sm uppercase">
-                  SC
-                </div>
+              <div className="w-10 h-10 bg-cream flex items-center justify-center rounded-md overflow-hidden border border-cream group-hover:bg-white transition-colors">
+                {user?.photo ? (
+                  <img src={user.photo} alt="User Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-dark font-black text-sm uppercase">
+                    {getInitials(displayName)}
+                  </div>
+                )}
               </div>
             </div>
           </div>

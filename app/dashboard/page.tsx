@@ -63,6 +63,9 @@ const RECENT_APPLICANTS = [
 import { useEffect, useState } from 'react';
 import { jobsApi } from '@/lib/api/jobs';
 import { profilesApi } from '@/lib/api/profiles';
+import { downloadAsFile, jsonToCsv } from '@/lib/utils/download';
+import toast from 'react-hot-toast';
+
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<any[]>([]);
@@ -135,6 +138,22 @@ export default function DashboardPage() {
 
     fetchDashboardData();
   }, []);
+
+  const handleDownloadReport = () => {
+    if (!stats || stats.length === 0) return;
+
+    const exportData = stats.map(s => ({
+      Metric: s.label,
+      Value: s.value,
+      Trend: s.trend,
+      Change: s.change,
+      Context: s.description
+    }));
+
+    const csvContent = jsonToCsv(exportData);
+    downloadAsFile(`workspace_summary_${new Date().toISOString().split('T')[0]}.csv`, csvContent, 'text/csv');
+    toast.success('Workspace summary report downloaded');
+  };
 
   if (loading) {
      return (
@@ -277,7 +296,10 @@ export default function DashboardPage() {
               </div>
 
               <div className="mt-8 pt-6 border-t border-cream/10">
-                <button className="w-full py-3 bg-cream text-dark font-semibold text-sm rounded-md hover:bg-white transition-all shadow-xl">
+                <button 
+                  onClick={handleDownloadReport}
+                  className="w-full py-3 bg-cream text-dark font-semibold text-sm rounded-md hover:bg-white transition-all shadow-xl"
+                >
                   Download Report
                 </button>
               </div>

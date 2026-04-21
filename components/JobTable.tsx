@@ -26,11 +26,9 @@ export default function JobTable() {
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const data = await jobsApi.getJobs();
-      console.log('JobTable: RAW FETCH:', data);
-      
-      const rawArray = Array.isArray(data) ? data : (data as any)?.data || (data as any)?.jobs || [];
-      console.log(`JobTable: Received ${rawArray.length} items from backend`);
+      // getJobs already merges API + local jobs, returns a plain array
+      const rawArray = await jobsApi.getJobs();
+      console.log(`JobTable: Received ${rawArray.length} items (API + local):`, rawArray);
 
       // Fallback mapper for properties missing from base Job schema
       const mappedJobs = rawArray.map((job: any) => ({
@@ -40,10 +38,11 @@ export default function JobTable() {
         location: job.location || 'Remote',
         posted: job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Recently',
         createdAt: job.createdAt || new Date().toISOString(),
-        applicants: job.applicantsCount || Math.floor(Math.random() * 50) + 10,
-        status: job.status ? (job.status.charAt(0).toUpperCase() + job.status.slice(1)) : 'Open'
+        applicants: job.applicantsCount ?? 0,
+        status: job.status ? (job.status.charAt(0).toUpperCase() + job.status.slice(1)) : 'Open',
+        _isLocal: job._isLocal || false, // Flag for locally-stored (pending sync) jobs
       }));
-      
+
       console.log('JobTable: MAPPED RESULT:', mappedJobs);
       setJobs(mappedJobs);
       setLastRefreshed(new Date().toLocaleTimeString());
@@ -220,7 +219,14 @@ export default function JobTable() {
                 <td className="px-8 py-6">
                   <Link href={`/jobs/${job.id}`} className="flex items-center gap-4">
                     <div>
-                      <div className="font-bold tracking-wider text-cream text-[15px] mb-1 group-hover:text-white transition-colors">{job.title}</div>
+                      <div className="font-bold tracking-wider text-cream text-[15px] mb-1 group-hover:text-white transition-colors flex items-center gap-2">
+                        {job.title}
+                        {job._isLocal && (
+                          <span className="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/20 animate-pulse">
+                            SYNCING
+                          </span>
+                        )}
+                      </div>
                       <div className="text-[14px] font-medium text-cream/40">ID: {String(job.id).slice(-6).toUpperCase()}</div>
                     </div>
                   </Link>

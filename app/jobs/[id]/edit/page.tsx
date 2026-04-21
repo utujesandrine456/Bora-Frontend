@@ -1,6 +1,6 @@
 'use client';
 
-import React, { use } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { MapPin, X, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -10,6 +10,7 @@ import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import Input, { Textarea, Select } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
+import { jobsApi } from '@/lib/api/jobs';
 
 // Types for Job Data
 interface JobRequirements {
@@ -95,9 +96,7 @@ const JOBS_METADATA: Record<string, Job> = {
   }
 };
 
-import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import { jobsApi } from '@/lib/api/jobs';
+
 
 export default function EditJobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

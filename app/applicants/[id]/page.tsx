@@ -328,7 +328,7 @@ export default function CandidateDetailsPage() {
                     </p>
                     <div className="space-y-3 mt-auto">
                       <div className="flex flex-wrap gap-2">
-                        {project.technologies.map(tech => (
+                        {project.technologies.map((tech: string) => (
                           <span key={tech} className="text-[10px] font-bold text-cream/60 bg-cream/5 px-2 py-1 rounded border border-cream/10">
                             {tech}
                           </span>

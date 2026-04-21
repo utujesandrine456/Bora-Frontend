@@ -5,12 +5,7 @@ export const uploadsApi = {
     const formData = new FormData();
     formData.append('file', file);
     
-    // Override Content-Type for this request
-    const response = await apiClient.post('/v1/upload/csv', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await apiClient.post('/v1/upload/csv', formData);
     return response.data;
   },
 
@@ -18,11 +13,7 @@ export const uploadsApi = {
     const formData = new FormData();
     formData.append('file', file);
     
-    const response = await apiClient.post('/v1/upload/resume', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await apiClient.post('/v1/upload/resume', formData);
     return response.data;
   }
 };

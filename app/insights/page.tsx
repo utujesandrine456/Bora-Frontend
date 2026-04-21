@@ -33,6 +33,8 @@ import TopNav from '@/components/TopNav';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
+import { downloadAsFile, jsonToCsv } from '@/lib/utils/download';
+import toast from 'react-hot-toast';
 
 // Types for charts
 interface TooltipPayload {
@@ -105,6 +107,22 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
 };
 
 export default function InsightsPage() {
+    const handleDownloadReport = () => {
+        const reportData = [
+            { Metric: 'Avg. Assessment Score', Value: '84.2%' },
+            { Metric: 'Time to Shortlist', Value: '3.5 days' },
+            { Metric: 'Interview Conversion', Value: '24%' },
+            { Metric: 'Active Candidates', Value: '1,280' },
+            { Metric: 'Skill Distribution (Frontend)', Value: '120/150' },
+            { Metric: 'Skill Distribution (Backend)', Value: '98/150' },
+            { Metric: 'Top Insight', Value: 'Backend Talent Surge' }
+        ];
+
+        const csvContent = jsonToCsv(reportData);
+        downloadAsFile(`insight_report_${new Date().toISOString().split('T')[0]}.csv`, csvContent, 'text/csv');
+        toast.success('Insights report generated and downloading...');
+    };
+
     return (
         <div className="flex flex-col h-full bg-dark min-h-screen text-cream">
             <TopNav />
@@ -127,7 +145,10 @@ export default function InsightsPage() {
                             <span>Last 30 Days</span>
                             <ChevronDown className="w-3 h-3 opacity-50" />
                         </Button>
-                        <Button className="bg-cream text-dark hover:bg-white gap-2 font-bold px-6">
+                        <Button 
+                            onClick={handleDownloadReport}
+                            className="bg-cream text-dark hover:bg-white gap-2 font-bold px-6"
+                        >
                             <Download className="w-4 h-4" />
                             Download Report
                         </Button>

@@ -22,6 +22,7 @@ import { profilesApi } from '@/lib/api/profiles';
 import { uploadsApi } from '@/lib/api/uploads';
 import toast from 'react-hot-toast';
 import { TalentProfile } from '@/lib/types/profile';
+import { downloadAsFile, jsonToCsv } from '@/lib/utils/download';
 
 // Mock Data fallback removed
 
@@ -31,10 +32,29 @@ export default function ApplicantsPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
+  const [selectedApplicants, setSelectedApplicants] = useState<(string | number)[]>([]);
   const [applicants, setApplicants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+
+  const handleExportApplicants = () => {
+    if (!applicants || !applicants.length) return toast.error('No applicants to export');
+    
+    // Prepare data for CSV
+    const exportData = applicants.map(a => ({
+      ID: a.id,
+      Name: a.name,
+      Role: a.role,
+      Location: a.location,
+      Score: a.score,
+      Status: a.status,
+      DateApplied: a.date
+    }));
+
+    const csvContent = jsonToCsv(exportData);
+    downloadAsFile(`applicants_export_${new Date().toISOString().split('T')[0]}.csv`, csvContent, 'text/csv');
+    toast.success('Applicants list exported as CSV');
+  };
 
   const fetchApplicants = async () => {
     try {
@@ -98,7 +118,7 @@ export default function ApplicantsPage() {
     }
   };
 
-  const handleSelectApplicant = (id: number, checked: boolean) => {
+  const handleSelectApplicant = (id: string | number, checked: boolean) => {
     setSelectedApplicants(prev =>
       checked ? [...prev, id] : prev.filter(aId => aId !== id)
     );
@@ -160,12 +180,31 @@ export default function ApplicantsPage() {
               <Button 
                 variant="secondary" 
                 className="gap-2"
-                onClick={() => document.getElementById('csv-upload')?.click()}
+                onClick={handleExportApplicants}
                 disabled={uploading}
               >
                 <Download className="w-4 h-4" />
-                {uploading ? 'Importing...' : 'Batch Import'}
+                Export CSV
               </Button>
+              <div className="relative">
+                <input
+                  type="file"
+                  id="csv-upload"
+                  className="hidden"
+                  accept=".csv,.xlsx,.xls"
+                  onChange={handleCsvUpload}
+                  disabled={uploading}
+                />
+                <Button 
+                  variant="secondary" 
+                  className="gap-2"
+                  onClick={() => document.getElementById('csv-upload')?.click()}
+                  disabled={uploading}
+                >
+                  <Download className="w-4 h-4 rotate-180" />
+                  {uploading ? 'Importing...' : 'Batch Import'}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
