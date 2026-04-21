@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import {
     TrendingUp,
     Zap,
@@ -21,7 +21,7 @@ import { profilesApi } from '@/lib/api/profiles';
 import { ScreeningResult } from '@/lib/api/types';
 import { TalentProfile } from '@/lib/types/profile';
 
-export default function CandidateResults() {
+function CandidateResultsContent() {
     const searchParams = useSearchParams();
     const jobId = searchParams.get('jobId');
     const [loading, setLoading] = useState(true);
@@ -234,6 +234,14 @@ export default function CandidateResults() {
                 </motion.div>
             </div>
         </div>
+    );
+}
+
+export default function CandidateResults() {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-dark text-cream">Loading...</div>}>
+            <CandidateResultsContent />
+        </Suspense>
     );
 }
 
