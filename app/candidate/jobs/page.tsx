@@ -3,11 +3,8 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Search,
-    Sparkles,
     MapPin,
     Clock,
-    DollarSign,
-    Briefcase,
     X,
     UploadCloud,
     CheckCircle2,
@@ -25,12 +22,12 @@ import Button from '@/components/ui/Button';
 
 import { useEffect } from 'react';
 import { jobsApi } from '@/lib/api/jobs';
+import { Job } from '@/lib/api/types';
 
 export default function CandidateJobs() {
-    const [jobs, setJobs] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [jobs, setJobs] = useState<Job[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedJob, setSelectedJob] = useState<any>(null);
+    const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [isApplying, setIsApplying] = useState(false);
     const [cvFile, setCvFile] = useState<File | null>(null);
     const [formData, setFormData] = useState({ name: '', email: '', summary: '' });
@@ -39,14 +36,11 @@ export default function CandidateJobs() {
     useEffect(() => {
         const fetchJobs = async () => {
             try {
-                setLoading(true);
                 const data = await jobsApi.getJobs();
                 setJobs(data);
             } catch (error) {
                 console.error('Failed to fetch jobs:', error);
                 toast.error('Failed to load job opportunities');
-            } finally {
-                setLoading(false);
             }
         };
         fetchJobs();
@@ -78,8 +72,9 @@ export default function CandidateJobs() {
                 setCvFile(null);
                 setFormData({ name: '', email: '', summary: '' });
             }, 3000);
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to submit application', { id });
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to submit application';
+            toast.error(message, { id });
         }
     };
 
@@ -170,7 +165,7 @@ export default function CandidateJobs() {
                             animate="animate"
                             className="space-y-6"
                         >
-                            {filteredJobs.map((job: any, index: number) => (
+                            {filteredJobs.map((job: Job, index: number) => (
                                 <motion.div key={job._id || job.id || index} variants={fadeUp}>
                                     <Card variant="glass" className="p-4 group hover:border-cream/40 transition-all duration-500 relative overflow-hidden">
                                         <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
@@ -265,7 +260,7 @@ export default function CandidateJobs() {
                                         </div>
                                         <h2 className="text-4xl font-black text-cream">Application Sent</h2>
                                         <p className="text-cream/60 font-medium max-w-xs leading-relaxed">
-                                            Your details and CV are being processed by our AI engine. We'll update your matching score shortly.
+                                            Your details and CV are being processed by our AI engine. We&apos;ll update your matching score shortly.
                                         </p>
                                     </div>
                                 ) : (

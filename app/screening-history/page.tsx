@@ -45,7 +45,7 @@ export default function ScreeningHistoryPage() {
                     return;
                 }
 
-                const mapped = jobs.map((job: any) => ({
+                const mapped = jobs.map((job) => ({
                     id: job._id,
                     role: job.title,
                     date: job.updatedAt || job.createdAt,
@@ -56,8 +56,9 @@ export default function ScreeningHistoryPage() {
                     matchQuality: 'High'
                 }));
                 setHistory(mapped);
-            } catch (error: any) {
-                console.error('ScreeningHistoryPage: Failed to fetch history:', error.response?.data || error.message);
+            } catch (error: unknown) {
+                const msg = error instanceof Error ? error.message : 'Failed to load history';
+                console.error('ScreeningHistoryPage: Failed to fetch history:', msg);
                 toast.error('Failed to load history');
             } finally {
                 setLoading(false);

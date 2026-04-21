@@ -41,19 +41,20 @@ const candidateMenuItems: MenuItem[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [role, setRole] = React.useState<string>('admin');
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
-        setRole(user.role?.toLowerCase() || 'admin');
-      } catch (e) {
-        console.error('Failed to parse user role');
+  const [role, setRole] = React.useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          return user.role?.toLowerCase() || 'admin';
+        } catch (e) {
+          console.error('Failed to parse user role', e);
+        }
       }
     }
-  }, []);
+    return 'admin';
+  });
 
   const handleLogout = () => {
     authApi.logout();

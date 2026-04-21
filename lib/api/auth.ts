@@ -11,7 +11,9 @@ export const authApi = {
     const response = await apiClient.post<LoginResponse>('/v1/auth/login', data);
     console.log('authApi.login response data:', response.data);
 
-    let token = (response.data as any).token || (response.data as any).accessToken || (response.data as any).access_token;
+    type RawLoginData = { token?: string; accessToken?: string; access_token?: string };
+    const raw = response.data as unknown as RawLoginData;
+    let token = raw.token || raw.accessToken || raw.access_token;
 
     if (token && typeof token === 'object' && token.accessToken) {
       token = token.accessToken;

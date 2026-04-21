@@ -2,29 +2,24 @@
 
 import React from 'react';
 import {
-    Target,
     TrendingUp,
     Zap,
     CheckCircle2,
-    XCircle,
-    ChevronRight,
     ArrowLeft,
-    Sparkles,
-    ShieldCheck,
     MessageSquare
 } from 'lucide-react';
 import Link from 'next/link';
 import TopNav from '@/components/TopNav';
 import Card, { fadeUp, staggerContainer } from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
 import { motion } from 'framer-motion';
-import Button from '@/components/ui/Button';
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { jobsApi } from '@/lib/api/jobs';
 import { screeningApi } from '@/lib/api/screening';
 import { profilesApi } from '@/lib/api/profiles';
+import { ScreeningResult } from '@/lib/api/types';
+import { TalentProfile } from '@/lib/types/profile';
 
 export default function CandidateResults() {
     const searchParams = useSearchParams();
@@ -41,20 +36,21 @@ export default function CandidateResults() {
                 if (!storedUser) return;
                 const user = JSON.parse(storedUser);
 
-                // Fetch job and profiles to find matching profile
-                const [job, profilesData, results] = await Promise.all([
+                const [job, profilesRaw, results] = await Promise.all([
                     jobsApi.getJobById(jobId),
                     profilesApi.getProfiles(),
                     screeningApi.getResults(jobId)
                 ]);
+                const profiles = profilesRaw.data || [];
 
-                const profile = (profilesData.data || []).find((p: any) => p.email === user.email);
+                const profile = profiles.find((p: TalentProfile) => p.email === user.email);
                 if (!profile) {
                     console.error('No profile found for current user');
                     return;
                 }
 
-                const myResult = results.find((r: any) => r.profileId === (profile as any)._id);
+                }
+                const myResult = results.find((r: ScreeningResult) => r.profileId === profile._id);
 
                 if (myResult) {
                     setAnalysis({
@@ -71,7 +67,7 @@ export default function CandidateResults() {
                             "Deeper project documentation could benefit evaluation",
                             "Specific architectural patterns require further validation"
                         ],
-                        aiReasoning: myResult.matchAnalysis || "Based on your profile and the job description, BORA AI identifies a high correlation with the technical requirements. Your experience in relevant projects demonstrates the necessary depth for this role."
+                        aiReasoning: myResult.matchAnalysis || "Based on your profile and the job description, BORA AI identifies a high correlation with the technical requirements."
                     });
                 }
             } catch (error) {
@@ -230,7 +226,7 @@ export default function CandidateResults() {
                                 </div>
                                 <h3 className="text-xs font-black text-cream/40 mb-6">AI evaluation summary</h3>
                                 <p className="text-lg font-medium text-cream/80 leading-relaxed font-serif italic">
-                                    "{(analysis.aiReasoning || "").replace(/"/g, '&quot;')}"
+                                    &quot;{analysis.aiReasoning || ""}&quot;
                                 </p>
                             </Card>
                         </div>

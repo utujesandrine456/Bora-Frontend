@@ -8,7 +8,6 @@ import {
   User,
   ChevronRight,
   Check,
-  Zap,
   X,
   Sparkles,
   UploadCloud,
@@ -45,11 +44,11 @@ export default function ApplicantsPage() {
       const response = await profilesApi.getProfiles();
       const mapped = response.data.map((p: TalentProfile, index: number) => ({
         id: index + 1,
-        dbId: (p as any)._id,
+        dbId: p._id,
         name: `${p.firstName} ${p.lastName}`,
         role: p.headline,
         location: p.location,
-        score: (p as any).matchScore || 0,
+        score: p.matchScore || 0,
         status: p.availability?.status || 'New',
         date: 'Recently',
         avatar: `${p.firstName[0]}${p.lastName[0]}`
@@ -77,8 +76,9 @@ export default function ApplicantsPage() {
       await uploadsApi.uploadResume(file);
       toast.success('Resume analyzed and profile created!', { id });
       fetchApplicants(); // Refresh list
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Upload failed', { id });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Upload failed';
+      toast.error(message, { id });
     } finally {
       setUploading(false);
     }
@@ -94,8 +94,9 @@ export default function ApplicantsPage() {
       await uploadsApi.uploadCsv(file);
       toast.success('Talent pool imported successfully!', { id });
       fetchApplicants(); // Refresh list
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'CSV Import failed', { id });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'CSV Import failed';
+      toast.error(message, { id });
     } finally {
       setUploading(false);
     }

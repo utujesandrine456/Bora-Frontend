@@ -39,11 +39,11 @@ export default function ScreeningResultsPage() {
           profilesApi.getProfiles()
         ]);
 
-        const job = jobsData.find((j: any) => j._id === jobId);
+        const job = jobsData.find((j) => j._id === jobId);
         setJobInfo(job);
 
         const mappedResults = resultsData.map((res, index) => {
-          const profile = profilesResponse.data.find((p: any) => p._id === res.profileId);
+          const profile = profilesResponse.data.find((p) => p._id === res.profileId);
           return {
             id: res.profileId,
             name: profile ? `${profile.firstName} ${profile.lastName}` : `Candidate ${index + 1}`,
@@ -57,8 +57,9 @@ export default function ScreeningResultsPage() {
 
         setResults(mappedResults);
         if (mappedResults.length > 0) setActiveCandidateId(mappedResults[0].id);
-      } catch (error: any) {
-        console.error('ScreeningResultsPage: Failed to fetch results:', error.response?.data || error.message);
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : 'Failed to load screening results';
+        console.error('ScreeningResultsPage: Failed to fetch results:', msg);
         toast.error('Failed to load screening results');
       } finally {
         setLoading(false);

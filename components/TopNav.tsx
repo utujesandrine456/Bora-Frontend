@@ -5,18 +5,19 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 export default function TopNav() {
-  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error('Failed to parse user from localStorage');
+  const [user, setUser] = useState<{ name: string; role: string } | null>(() => {
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          return JSON.parse(storedUser);
+        } catch (e) {
+          console.error('Failed to parse user from localStorage', e);
+        }
       }
     }
-  }, []);
+    return null;
+  });
 
   const initials = user?.name
     ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)

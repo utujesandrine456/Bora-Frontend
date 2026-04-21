@@ -16,10 +16,8 @@ import {
   Zap,
   CheckCircle2,
   AlertCircle,
-  FileText,
   Download,
-  Code2,
-  Globe
+  Code2
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -45,16 +43,16 @@ export default function CandidateDetailsPage() {
         const p = await profilesApi.getProfileById(id);
 
         setCandidate({
-          id: (p as any)._id,
+          id: p._id,
           name: `${p.firstName} ${p.lastName}`,
           role: p.headline || 'Applicant',
           location: p.location || 'Remote',
           email: p.email,
-          phone: (p as any).phone || 'Not provided',
+          phone: 'Not provided',
           avatar: `${p.firstName[0]}${p.lastName[0]}`,
-          status: (p as any).status || 'Applied',
-          score: (p as any).matchScore || 85,
-          matchDescription: (p as any).summary || 'Profile analysis complete. Screening results are being processed by the BORA AI engine.',
+          status: p.availability?.status || 'Applied',
+          score: p.matchScore || 85,
+          matchDescription: p.summary || 'Profile analysis complete. Screening results are being processed by the BORA AI engine.',
           skills: {
             primary: p.skills.slice(0, 5).map(s => s.name),
             secondary: p.skills.slice(5).map(s => s.name)
@@ -78,18 +76,18 @@ export default function CandidateDetailsPage() {
             year: proj.endDate ? proj.endDate.split('-')[0] : '2024'
           })),
           aiInsights: {
-            strengths: (p as any).strengths || [
+            strengths: [
               'Strong technical foundation in ' + p.skills.slice(0, 2).map(s => s.name).join(', '),
               'Relevant professional background in ' + (p.experience[0]?.role || 'engineering'),
               'Clear career progression and focus'
             ],
-            weaknesses: (p as any).weaknesses || [
+            weaknesses: [
               'Requires validation on specific architectural patterns',
               'Benefit from deeper project-specific documentation'
             ],
-            parity: (p as any).summary || `${(p as any).matchScore || 85}/100 alignment with core job requirements.`
+            parity: p.summary || `${p.matchScore || 85}/100 alignment with core job requirements.`
           },
-          certifications: (p as any).certifications || [],
+          certifications: [],
           languages: p.languages || []
         });
       } catch (error) {

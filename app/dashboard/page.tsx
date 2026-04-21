@@ -21,6 +21,8 @@ import { motion } from 'framer-motion';
 import Button from '@/components/ui/Button';
 import { jobsApi } from '@/lib/api/jobs';
 import { profilesApi } from '@/lib/api/profiles';
+import { Job } from '@/lib/api/types';
+import { TalentProfile } from '@/lib/types/profile';
 
 export default function Dashboard() {
   const [stats, setStats] = useState<any[]>([]);
@@ -37,7 +39,7 @@ export default function Dashboard() {
         ]);
 
         // Calculate Stats
-        const activeJobs = jobs.filter((j: any) => j.status !== 'closed' && j.status !== 'archived').length;
+        const activeJobs = jobs.filter((j: Job) => j.status !== 'closed' && j.status !== 'archived').length;
         const totalApplicants = profilesResponse.total || 0;
 
         setStats([
@@ -68,7 +70,7 @@ export default function Dashboard() {
         ]);
 
         // Map Recent Applicants
-        const mappedApplicants = (profilesResponse.data || []).slice(0, 3).map((p: any) => ({
+        const mappedApplicants = (profilesResponse.data || []).slice(0, 3).map((p: TalentProfile) => ({
           id: p._id,
           name: `${p.firstName} ${p.lastName}`,
           role: p.headline || 'Applicant',

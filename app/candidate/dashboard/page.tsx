@@ -2,11 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-    Briefcase,
     Search,
     Award,
     Zap,
-    Trophy,
     Target,
     Sparkles
 } from 'lucide-react';
@@ -19,6 +17,9 @@ import Button from '@/components/ui/Button';
 import { jobsApi } from '@/lib/api/jobs';
 import { profilesApi } from '@/lib/api/profiles';
 import { screeningApi } from '@/lib/api/screening';
+import { Job, ScreeningResult } from '@/lib/api/types';
+import { TalentProfile } from '@/lib/types/profile';
+import { Briefcase } from 'lucide-react';
 
 export default function CandidateDashboard() {
     const [stats, setStats] = useState([
@@ -45,11 +46,11 @@ export default function CandidateDashboard() {
                 ]);
 
                 // Find candidate's profiles (applications)
-                const candidateProfiles = (profilesData.data || []).filter((p: any) => p.email === user.email);
+                const candidateProfiles = (profilesData.data || []).filter((p: TalentProfile) => p.email === user.email);
 
                 // Map all jobs to their status for this candidate
-                const jobsWithStatus = await Promise.all(jobs.map(async (job: any) => {
-                    const profile = candidateProfiles.find((p: any) => p.jobId === job._id);
+                const jobsWithStatus = await Promise.all(jobs.map(async (job: Job) => {
+                    const profile = candidateProfiles.find((p: TalentProfile) => p.jobId === job._id);
                     let score = 0;
                     let insight = '';
                     let status = 'Open to Apply';
@@ -57,15 +58,15 @@ export default function CandidateDashboard() {
                     if (profile) {
                         status = 'Pending';
                         try {
-                            const results = await screeningApi.getResults(job._id);
-                            const myResult = results.find((r: any) => r.profileId === profile._id);
+                            const results = await screeningApi.getResults(job._id!);
+                            const myResult = results.find((r: ScreeningResult) => r.profileId === profile._id);
                             if (myResult) {
                                 score = myResult.score;
                                 insight = myResult.matchAnalysis;
                                 status = 'Screened';
                             }
-                        } catch (e) {
-                            console.error('Failed to fetch results for job:', job._id);
+                        } catch (err) {
+                            console.error('Failed to fetch results for job:', job._id, err);
                         }
                     }
 
@@ -87,7 +88,7 @@ export default function CandidateDashboard() {
                 // Update Stats
                 const screenedJobs = jobsWithStatus.filter(j => j.status === 'Screened');
                 const avgScore = screenedJobs.length > 0
-                    ? Math.round(screenedJobs.reduce((acc: number, curr: any) => acc + curr.score, 0) / screenedJobs.length)
+                    ? Math.round(screenedJobs.reduce((acc: number, curr: any) => acc + (curr.score || 0), 0) / screenedJobs.length)
                     : 0;
 
                 setStats([
