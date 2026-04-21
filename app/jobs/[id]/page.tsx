@@ -37,6 +37,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
   const [loading, setLoading] = useState(true);
   const [screening, setScreening] = useState(false);
 
+  
   useEffect(() => {
     const fetchJobData = async () => {
       try {

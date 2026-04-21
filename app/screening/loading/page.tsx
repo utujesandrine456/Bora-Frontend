@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText,
@@ -23,7 +23,7 @@ const STEPS = [
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function ScreeningLoadingPage() {
+function ScreeningLoadingContent() {
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const router = useRouter();
@@ -225,5 +225,13 @@ export default function ScreeningLoadingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ScreeningLoadingPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen bg-dark items-center justify-center text-cream">Loading...</div>}>
+      <ScreeningLoadingContent />
+    </Suspense>
   );
 }
