@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Settings as SettingsIcon, User, Bell, Shield, Wallet, Laptop } from 'lucide-react';
+import { User, Shield, Laptop } from 'lucide-react';
 import TopNav from '@/components/TopNav';
 import Card, { fadeUp, staggerContainer } from '@/components/ui/Card';
 import { motion } from 'framer-motion';

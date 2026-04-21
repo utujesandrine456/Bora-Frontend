@@ -2,17 +2,17 @@
 
 import { Search, Bell } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export default function TopNav() {
-  const [user, setUser] = useState<{ name: string; role: string } | null>(() => {
+  const [user] = useState<{ name: string; role: string } | null>(() => {
     if (typeof window !== 'undefined') {
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         try {
           return JSON.parse(storedUser);
-        } catch (e) {
-          console.error('Failed to parse user from localStorage', e);
+        } catch (_e) {
+          // ignore
         }
       }
     }

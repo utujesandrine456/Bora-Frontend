@@ -66,9 +66,10 @@ export default function CreateJobPage() {
       console.log('CreateJobPage: Creation Response:', response);
       toast.success(`Job ${status === 'open' ? 'published' : 'saved as draft'} successfully`);
       router.push('/jobs');
-    } catch (error: any) {
-      console.error('CreateJobPage Error:', error.response?.data || error.message);
-      toast.error(error.response?.data?.message || 'Failed to create job');
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Failed to create job';
+      console.error('CreateJobPage Error:', msg);
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
@@ -102,13 +103,13 @@ export default function CreateJobPage() {
                       label="Job Title"
                       placeholder="E.g. Senior Frontend Developer"
                       value={formData.title}
-                      onChange={(e: any) => setFormData({ ...formData, title: e.target.value })}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, title: e.target.value })}
                     />
                     <Input
                       label="Company Name"
                       placeholder="E.g. TechCorp Inc."
                       value={formData.company}
-                      onChange={(e: any) => setFormData({ ...formData, company: e.target.value })}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, company: e.target.value })}
                     />
                   </div>
 
@@ -116,7 +117,7 @@ export default function CreateJobPage() {
                     <Select
                       label="Job Type"
                       value={formData.type}
-                      onChange={(e: any) => setFormData({ ...formData, type: e.target.value })}
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, type: e.target.value })}
                       options={[
                         { value: 'full-time', label: 'Full-time' },
                         { value: 'contract', label: 'Contract' },
@@ -128,7 +129,7 @@ export default function CreateJobPage() {
                       placeholder="E.g. Remote"
                       icon={MapPin}
                       value={formData.location}
-                      onChange={(e: any) => setFormData({ ...formData, location: e.target.value })}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, location: e.target.value })}
                     />
                   </div>
 
@@ -138,7 +139,7 @@ export default function CreateJobPage() {
                     rows={6}
                     className='text-md font-medium'
                     value={formData.description}
-                    onChange={(e: any) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
                   />
                 </div>
               </Card>
@@ -187,7 +188,7 @@ export default function CreateJobPage() {
                   <Select
                     label="Experience Level"
                     value={formData.experienceLevel}
-                    onChange={(e: any) => setFormData({ ...formData, experienceLevel: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, experienceLevel: e.target.value })}
                     options={[
                       { value: 'entry', label: 'ENTRY LEVEL (0-2 YRS)' },
                       { value: 'junior', label: 'JUNIOR (2-4 YRS)' },
@@ -199,7 +200,7 @@ export default function CreateJobPage() {
                   <Select
                     label="Education"
                     value={formData.education}
-                    onChange={(e: any) => setFormData({ ...formData, education: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, education: e.target.value })}
                     options={[
                       { value: 'bachelor', label: "BACHELOR'S DEGREE" },
                       { value: 'master', label: "MASTER'S DEGREE" },

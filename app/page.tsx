@@ -6,7 +6,6 @@ import { motion, useScroll, useTransform, AnimatePresence, Variants } from 'fram
 import { ArrowRight, Zap, ShieldCheck, BrainCircuit, Send, ChevronDown, ChevronUp, UserCheck, Star } from 'lucide-react';
 import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 import Header from '@/components/Header';
-import { jobsApi } from '@/lib/api/jobs';
 import { profilesApi } from '@/lib/api/profiles';
 
 export default function LandingPage() {
@@ -22,7 +21,7 @@ export default function LandingPage() {
             topMatches: Math.max(12, Math.floor(profilesRes.total * 0.08)).toString()
           });
         }
-      } catch (e) {
+      } catch (_e) {
         console.log('Public landing page: using nominal defaults');
       }
     };

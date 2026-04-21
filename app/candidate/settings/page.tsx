@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { User, Bell, Shield, Briefcase, Sparkles, MapPin } from 'lucide-react';
+import { User, Bell, Briefcase } from 'lucide-react';
 import TopNav from '@/components/TopNav';
 import Card, { fadeUp, staggerContainer } from '@/components/ui/Card';
 import { motion } from 'framer-motion';

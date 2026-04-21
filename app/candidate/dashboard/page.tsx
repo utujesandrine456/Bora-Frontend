@@ -28,7 +28,8 @@ export default function CandidateDashboard() {
         { label: 'Profile Strength', value: 'Expert', icon: Award, color: 'text-amber-500' },
     ]);
 
-    const [activeJobs, setActiveJobs] = useState<any[]>([]);
+    interface ActiveJob { id: string | undefined; jobId: string | undefined; role: string; company: string; status: string; score: number; date: string; insight: string; }
+    const [activeJobs, setActiveJobs] = useState<ActiveJob[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -88,7 +89,7 @@ export default function CandidateDashboard() {
                 // Update Stats
                 const screenedJobs = jobsWithStatus.filter(j => j.status === 'Screened');
                 const avgScore = screenedJobs.length > 0
-                    ? Math.round(screenedJobs.reduce((acc: number, curr: any) => acc + (curr.score || 0), 0) / screenedJobs.length)
+                    ? Math.round(screenedJobs.reduce((acc: number, curr: ActiveJob) => acc + (curr.score || 0), 0) / screenedJobs.length)
                     : 0;
 
                 setStats([

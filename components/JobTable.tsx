@@ -8,7 +8,7 @@ import Badge from './ui/Badge';
 import { jobsApi } from '@/lib/api/jobs';
 import { screeningApi } from '@/lib/api/screening';
 import { profilesApi } from '@/lib/api/profiles';
-import { Job } from '@/lib/api/types';
+import { TalentProfile } from '@/lib/types/profile';
 import toast from 'react-hot-toast';
 import { Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -22,7 +22,7 @@ export default function JobTable() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
 
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState('');
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -37,11 +37,11 @@ export default function JobTable() {
 
       console.log('JobTable: RAW FETCH:', data);
 
-      const rawArray = Array.isArray(data) ? data : (data as any)?.data || (data as any)?.jobs || [];
+      const rawArray: Job[] = Array.isArray(data) ? data : [];
 
       // Calculate real applicant counts from profiles
       const applicantCounts: Record<string, number> = {};
-      profilesRes.data.forEach((p: any) => {
+      profilesRes.data.forEach((p: TalentProfile) => {
         const jId = p.jobId;
         if (jId) {
           applicantCounts[jId] = (applicantCounts[jId] || 0) + 1;
@@ -51,7 +51,7 @@ export default function JobTable() {
       console.log(`JobTable: Received ${rawArray.length} items from backend`);
 
       // Fallback mapper for properties missing from base Job schema
-      const mappedJobs = rawArray.map((job: any) => {
+      const mappedJobs = rawArray.map((job: Job) => {
         const jobId = job._id || job.id;
         // Handle varied status strings: 'open' | 'active' | 'draft' | 'published'
         const rawStatus = job.status || 'open';
@@ -79,8 +79,9 @@ export default function JobTable() {
       }
       setJobs(mappedJobs);
       setLastRefreshed(new Date().toLocaleTimeString());
-    } catch (error: any) {
-      console.error('JobTable: Failed to fetch jobs:', error.response?.data || error.message);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Failed to load jobs';
+      console.error('JobTable: Failed to fetch jobs:', msg);
       toast.error('Failed to load jobs');
     } finally {
       setLoading(false);
@@ -101,8 +102,9 @@ export default function JobTable() {
       setTimeout(() => {
         router.push('/screening');
       }, 1500);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to start analysis', { id });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Failed to start analysis';
+      toast.error(msg, { id });
     }
   };
 
@@ -112,8 +114,9 @@ export default function JobTable() {
       await jobsApi.updateJob(jobId, { status: 'closed' });
       toast.success('Job closed successfully', { id });
       fetchJobs();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to close job', { id });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Failed to close job';
+      toast.error(msg, { id });
     }
   };
 
@@ -125,8 +128,9 @@ export default function JobTable() {
       await jobsApi.deleteJob(jobId);
       toast.success('Job deleted successfully', { id });
       fetchJobs();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to delete job', { id });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Failed to delete job';
+      toast.error(msg, { id });
     }
   };
 

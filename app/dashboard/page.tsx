@@ -5,7 +5,6 @@ import {
   Users,
   Briefcase,
   ClipboardCheck,
-  TrendingUp,
   ArrowUpRight,
   ArrowDownRight,
   Clock,
@@ -25,8 +24,10 @@ import { Job } from '@/lib/api/types';
 import { TalentProfile } from '@/lib/types/profile';
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<any[]>([]);
-  const [recentApplicants, setRecentApplicants] = useState<any[]>([]);
+  interface Stat { label: string; value: string; change: string; trend: string; icon: React.ElementType; color: string; }
+  interface Applicant { id: string; name: string; role: string; match: number; status: string; avatar: string; }
+  const [stats, setStats] = useState<Stat[]>([]);
+  const [recentApplicants, setRecentApplicants] = useState<Applicant[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -131,7 +132,7 @@ export default function Dashboard() {
           animate="animate"
           className="grid grid-cols-1 md:grid-cols-3 gap-6"
         >
-          {stats.map((stat: any, i: number) => (
+          {stats.map((stat, i: number) => (
             <motion.div key={i} variants={fadeUp}>
               <Card variant="glass" className="p-8 relative group overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
@@ -184,7 +185,7 @@ export default function Dashboard() {
                   <div key={i} className="h-24 w-full bg-cream/5 rounded-md animate-pulse" />
                 ))
               ) : recentApplicants.length > 0 ? (
-                recentApplicants.map((app: any) => (
+                recentApplicants.map((app) => (
                   <Link key={app.id} href={`/applicants/${app.id}`}>
                     <Card variant="glass" className="p-6 hover:border-cream/40 transition-all group cursor-pointer relative overflow-hidden mb-4">
                       <div className="flex items-center gap-6 relative z-10">

@@ -40,8 +40,9 @@ export default function SignupPage() {
             });
             toast.success('Account created successfully!');
             router.push('/auth/login');
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to create account');
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to create account';
+            toast.error(message);
         } finally {
             setLoading(false);
         }

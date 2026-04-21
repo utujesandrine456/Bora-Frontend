@@ -41,15 +41,15 @@ const candidateMenuItems: MenuItem[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [role, setRole] = React.useState<string>(() => {
+  const [role] = React.useState<string>(() => {
     if (typeof window !== 'undefined') {
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         try {
-          const user = JSON.parse(storedUser);
-          return user.role?.toLowerCase() || 'admin';
-        } catch (e) {
-          console.error('Failed to parse user role', e);
+          const parsed = JSON.parse(storedUser);
+          return parsed.role?.toLowerCase() || 'admin';
+        } catch (_e) {
+          // ignore
         }
       }
     }

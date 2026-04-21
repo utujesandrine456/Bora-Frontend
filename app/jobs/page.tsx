@@ -1,11 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import TopNav from '@/components/TopNav';
 import JobTable from '@/components/JobTable';
-import Button from '@/components/ui/Button';
 
 export default function JobsListingPage() {
   return (

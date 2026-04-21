@@ -2,17 +2,14 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import Card from '@/components/ui/Card';
 import { authApi } from '@/lib/api/auth';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
-    const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -38,8 +35,9 @@ export default function LoginPage() {
             console.log('Login successful, token set in localStorage. Redirecting...');
             toast.success('Successfully signed in!');
             window.location.href = '/jobs'; // Force a hard refresh to ensure Sidebar and API clients pick up the token
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Invalid credentials');
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Invalid credentials';
+            toast.error(message);
         } finally {
             setLoading(false);
         }

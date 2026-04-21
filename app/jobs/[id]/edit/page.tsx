@@ -12,22 +12,6 @@ import Input, { Textarea, Select } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
 import { jobsApi } from '@/lib/api/jobs';
 
-// Types for Job Data
-interface JobRequirements {
-  experience: string;
-  education: string;
-  location: string;
-}
-
-interface Job {
-  title: string;
-  location: string;
-  postedDate: string;
-  applicantsCount: number;
-  description: string;
-  skills: string[];
-  requirements: JobRequirements;
-}
 
 
 export default function EditJobPage({ params }: { params: Promise<{ id: string }> }) {
@@ -53,7 +37,7 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
         setLocation(data.location || '');
         setSkills(data.skills || []);
         setType(data.type || 'full-time');
-      } catch (error) {
+      } catch (_error) {
         toast.error('Failed to load job data');
       } finally {
         setLoading(false);
@@ -85,7 +69,7 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
       });
       toast.success('Job updated successfully!');
       router.push('/jobs');
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to update job');
     } finally {
       setSaving(false);
@@ -139,7 +123,7 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
                     <Select
                       label="Job Type"
                       value={type}
-                      onChange={(e: any) => setType(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setType(e.target.value)}
                       options={[
                         { value: 'full-time', label: 'Full-time' },
                         { value: 'contract', label: 'Contract' },

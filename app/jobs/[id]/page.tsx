@@ -6,7 +6,6 @@ import {
   Calendar,
   Users,
   Pencil,
-  Play,
   ArrowLeft
 } from 'lucide-react';
 import Link from 'next/link';
@@ -53,6 +52,7 @@ import toast from 'react-hot-toast';
 import { jobsApi } from '@/lib/api/jobs';
 import { screeningApi } from '@/lib/api/screening';
 import { profilesApi } from '@/lib/api/profiles';
+import { TalentProfile } from '@/lib/types/profile';
 
 export default function JobDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -70,11 +70,11 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
           profilesApi.getProfiles({ jobId: id, limit: 100 })
         ]);
 
-        const applicants = profilesRes.data.map((p: any) => ({
+        const applicants = profilesRes.data.map((p: TalentProfile) => ({
           name: `${p.firstName} ${p.lastName}`,
           skills: p.headline || 'Candidate',
-          experience: p.experience?.[0]?.title || 'Professional',
-          match: p.score || 0
+          experience: p.experience?.[0]?.role || 'Professional',
+          match: p.matchScore || 0
         }));
 
         const screened = applicants.filter(a => a.match > 0).length;
@@ -116,8 +116,9 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
       toast.success('Screening started successfully!', { id: toastId });
       // Redirect to results after a short delay or immediately
       router.push(`/screening/results?jobId=${id}`);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to start screening', { id: toastId });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Failed to start screening';
+      toast.error(msg, { id: toastId });
     } finally {
       setScreening(false);
     }
