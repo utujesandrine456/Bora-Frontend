@@ -52,6 +52,7 @@ export default function CreateJobPage() {
       company: formData.company,
       location: formData.location,
       description: formData.description,
+      type: formData.type,
       requirements: skills,
       skills: skills,
       experienceYears: Number(formData.experienceYears) || 0,
@@ -90,7 +91,7 @@ export default function CreateJobPage() {
             {/* Main Form */}
             <div className="lg:col-span-2 space-y-10">
               <Card padding="lg">
-                <h2 className="text-[24px] font-black text-cream uppercase mb-8 flex items-center gap-3">
+                <h2 className="text-[24px] font-black text-cream mb-8 flex items-center gap-3">
                   <div className="w-2 h-8 bg-cream rounded-md"></div>
                   Basic Information
                 </h2>
@@ -143,7 +144,7 @@ export default function CreateJobPage() {
               </Card>
 
               <Card padding="lg">
-                <h2 className="text-[24px] font-black text-cream uppercase mb-8 flex items-center gap-3">
+                <h2 className="text-[24px] font-black text-cream mb-8 flex items-center gap-3">
                   <div className="w-2 h-8 bg-cream rounded-md"></div>
                   Skills & Expertise
                 </h2>

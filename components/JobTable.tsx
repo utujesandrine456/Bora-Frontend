@@ -7,11 +7,14 @@ import Button from './ui/Button';
 import Badge from './ui/Badge';
 import { jobsApi } from '@/lib/api/jobs';
 import { screeningApi } from '@/lib/api/screening';
+import { profilesApi } from '@/lib/api/profiles';
 import { Job } from '@/lib/api/types';
 import toast from 'react-hot-toast';
 import { Zap } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function JobTable() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('latest');
   const [showFilters, setShowFilters] = useState(false);
@@ -22,18 +25,34 @@ export default function JobTable() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState('');
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const data = await jobsApi.getJobs();
+      const [data, profilesRes] = await Promise.all([
+        jobsApi.getJobs(),
+        profilesApi.getProfiles({ limit: 1000 })
+      ]);
+
       console.log('JobTable: RAW FETCH:', data);
 
       const rawArray = Array.isArray(data) ? data : (data as any)?.data || (data as any)?.jobs || [];
+
+      // Calculate real applicant counts from profiles
+      const applicantCounts: Record<string, number> = {};
+      profilesRes.data.forEach((p: any) => {
+        const jId = p.jobId;
+        if (jId) {
+          applicantCounts[jId] = (applicantCounts[jId] || 0) + 1;
+        }
+      });
+
       console.log(`JobTable: Received ${rawArray.length} items from backend`);
 
       // Fallback mapper for properties missing from base Job schema
       const mappedJobs = rawArray.map((job: any) => {
+        const jobId = job._id || job.id;
         // Handle varied status strings: 'open' | 'active' | 'draft' | 'published'
         const rawStatus = job.status || 'open';
         let displayStatus = 'Open';
@@ -43,13 +62,13 @@ export default function JobTable() {
         else if (rawStatus.toLowerCase() === 'published' || rawStatus.toLowerCase() === 'active') displayStatus = 'Open';
 
         return {
-          id: job._id || job.id,
+          id: jobId,
           title: job.title || 'Untitled Role',
           type: job.type ? (job.type.charAt(0).toUpperCase() + job.type.slice(1)) : 'Full-time',
           location: job.location || 'Remote',
           posted: job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Recently',
           createdAt: job.createdAt || new Date().toISOString(),
-          applicants: job.applicantsCount || Math.floor(Math.random() * 50) + 10,
+          applicants: applicantCounts[jobId] || job.applicantsCount || 0,
           status: displayStatus
         };
       });
@@ -75,12 +94,39 @@ export default function JobTable() {
   const handleScreen = async (jobId: string) => {
     if (!jobId) return;
 
-    const id = toast.loading('Initiating AI screening...');
+    const id = toast.loading('Initiating AI analysis...');
     try {
       await screeningApi.triggerScreening(jobId);
-      toast.success('Screening started! Results will appear shortly.', { id });
+      toast.success('Analysis initiated! Redirecting to results...', { id });
+      setTimeout(() => {
+        router.push('/screening');
+      }, 1500);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to start screening', { id });
+      toast.error(error.response?.data?.message || 'Failed to start analysis', { id });
+    }
+  };
+
+  const handleCloseJob = async (jobId: string) => {
+    const id = toast.loading('Closing job...');
+    try {
+      await jobsApi.updateJob(jobId, { status: 'closed' });
+      toast.success('Job closed successfully', { id });
+      fetchJobs();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to close job', { id });
+    }
+  };
+
+  const handleDeleteJob = async (jobId: string) => {
+    if (!confirm('Are you sure you want to delete this job? This action cannot be undone.')) return;
+
+    const id = toast.loading('Deleting job...');
+    try {
+      await jobsApi.deleteJob(jobId);
+      toast.success('Job deleted successfully', { id });
+      fetchJobs();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to delete job', { id });
     }
   };
 
@@ -160,7 +206,7 @@ export default function JobTable() {
                           <button
                             key={s}
                             onClick={() => setStatusFilter(s)}
-                            className={`flex items-center justify-between px-3 py-2 rounded-md tracking-widest text-xs transition-colors ${statusFilter === s ? 'bg-cream/10 text-cream font-bold border border-cream/30' : 'text-cream/60 hover:bg-cream/5'}`}
+                            className={`flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${statusFilter === s ? 'bg-cream/10 text-cream font-bold border border-cream/30' : 'text-cream/60 hover:bg-cream/5'}`}
                           >
                             {s}
                             {statusFilter === s && <Check className="w-4 h-4 text-cream" />}
@@ -198,7 +244,7 @@ export default function JobTable() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-6 py-3 bg-dark border border-cream/30 rounded-md focus:outline-none focus:ring-1 focus:ring-cream focus:border-cream transition-all font-bold tracking-wider text-xs text-cream cursor-pointer appearance-none pr-10 relative inline-block"
+            className="px-6 py-3 bg-dark border border-cream/30 rounded-md focus:outline-none focus:ring-1 focus:ring-cream focus:border-cream transition-all font-medium text-sm text-cream cursor-pointer appearance-none pr-10 relative inline-block"
             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23DAC5A7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center' }}
           >
             <option value="latest">Latest first</option>
@@ -234,18 +280,18 @@ export default function JobTable() {
                 <td className="px-8 py-6">
                   <Link href={`/jobs/${job.id}`} className="flex items-center gap-4">
                     <div>
-                      <div className="font-bold tracking-wider text-cream text-[15px] mb-1 group-hover:text-white transition-colors">{job.title}</div>
+                      <div className="font-bold text-cream text-[15px] mb-1 group-hover:text-white transition-colors">{job.title}</div>
                       <div className="text-[14px] font-medium text-cream/40">ID: {String(job.id).slice(-6).toUpperCase()}</div>
                     </div>
                   </Link>
                 </td>
                 <td className="px-8 py-6">
                   <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-1.5 text-cream/70 font-medium tracking-widest text-xs">
+                    <div className="flex items-center gap-1.5 text-cream/70 font-medium text-sm">
                       <MapPin className="h-4 w-4 text-cream/40" />
                       <span>{job.location}</span>
                     </div>
-                    <div className="text-[10px] font-black text-cream flex items-center gap-1.5 tracking-widest">
+                    <div className="text-[10px] font-black text-cream flex items-center gap-1.5">
                       <div className="w-1 h-1 rounded-full bg-cream"></div>
                       {job.type}
                     </div>
@@ -266,13 +312,13 @@ export default function JobTable() {
                   </div>
                 </td>
                 <td className="px-8 py-6">
-                  <div className="flex items-center gap-2 text-cream/60 font-medium tracking-widest text-xs">
+                  <div className="flex items-center gap-2 text-cream/60 font-medium text-sm">
                     <Clock className="h-4 w-4 text-cream/40" />
                     <span>{job.posted}</span>
                   </div>
                 </td>
                 <td className="px-8 py-6">
-                  <Badge variant={job.status === 'Open' ? 'success' : 'secondary'} className="px-4 py-1.5 rounded-md text-[10px] tracking-wider font-bold">
+                  <Badge variant={job.status === 'Open' ? 'success' : 'secondary'} className="px-4 py-1.5 rounded-md text-[10px] font-bold">
                     {job.status}
                   </Badge>
                 </td>
@@ -282,14 +328,70 @@ export default function JobTable() {
                       variant="primary"
                       size="sm"
                       onClick={() => handleScreen(job.id)}
-                      className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest gap-1.5 h-8 border border-cream hover:bg-cream hover:text-dark transition-all"
+                      className="px-4 py-2 text-xs font-black shadow-none transition-all group-hover:shadow-xl group-hover:shadow-cream/5"
                     >
-                      <Zap className="h-3 w-3" fill="currentColor" />
+                      <Zap className="h-3.5 w-3.5" />
                       Screen
                     </Button>
-                    <button className="p-2 text-cream/40 hover:text-cream hover:bg-cream/10 rounded-md transition-all cursor-pointer">
-                      <MoreVertical className="h-5 w-5" />
-                    </button>
+                    <div className="relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenu(activeMenu === job.id ? null : job.id);
+                        }}
+                        className="p-2 text-cream/40 hover:text-cream hover:bg-cream/10 rounded-md transition-all cursor-pointer"
+                      >
+                        <MoreVertical className="h-5 w-5" />
+                      </button>
+
+                      {activeMenu === job.id && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveMenu(null);
+                            }}
+                          />
+                          <div className="absolute right-0 mt-2 w-48 bg-dark border border-cream/20 rounded-md shadow-xl z-20 overflow-hidden animate-in fade-in zoom-in duration-100">
+                            <Link
+                              href={`/jobs/${job.id}`}
+                              className="w-full text-left px-4 py-2.5 text-xs font-bold text-cream/70 hover:bg-cream/10 hover:text-cream border-b border-cream/5 flex items-center gap-2"
+                            >
+                              View Details
+                            </Link>
+                            <Link
+                              href={`/jobs/${job.id}/edit`}
+                              className="w-full text-left px-4 py-2.5 text-xs font-bold text-cream/70 hover:bg-cream/10 hover:text-cream border-b border-cream/5 flex items-center gap-2"
+                            >
+                              Edit Job
+                            </Link>
+                            {job.status !== 'Closed' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCloseJob(job.id);
+                                  setActiveMenu(null);
+                                }}
+                                className="w-full text-left px-4 py-2.5 text-xs font-bold text-amber-500/80 hover:bg-amber-500/10 hover:text-amber-500 border-b border-cream/5 flex items-center gap-2"
+                              >
+                                Close Job
+                              </button>
+                            )}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteJob(job.id);
+                                setActiveMenu(null);
+                              }}
+                              className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-500/80 hover:bg-red-500/10 hover:text-red-500 flex items-center gap-2"
+                            >
+                              Delete Job
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </td>
               </tr>

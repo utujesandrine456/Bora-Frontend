@@ -61,7 +61,7 @@ export default function SignupPage() {
                         <div className="w-10 h-10 border-2 border-cream bg-dark rounded-full flex items-center justify-center transition-transform hover:rotate-12 duration-500 overflow-hidden">
                             <img src="/logo.png" alt="BORA Logo" className="w-full h-full object-cover" />
                         </div>
-                        <span className="text-3xl font-bold tracking-tight text-cream transition-all duration-700">
+                        <span className="text-3xl font-bold text-cream transition-all duration-700">
                             Bora
                         </span>
                     </Link>
@@ -119,7 +119,7 @@ export default function SignupPage() {
                     </div>
 
                     <div className="mb-12">
-                        <h2 className="text-3xl font-bold text-cream tracking-tight">Apply for talent network</h2>
+                        <h2 className="text-3xl font-bold text-cream">Apply for talent network</h2>
                         <p className="text-cream/50 mt-2 font-medium">Create your profile and let our AI find the best opportunities for you.</p>
                     </div>
 
@@ -190,7 +190,7 @@ export default function SignupPage() {
                             <div className="absolute inset-0 flex items-center">
                                 <div className="w-full border-t border-cream/10"></div>
                             </div>
-                            <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
+                            <div className="relative flex justify-center text-xs font-semibold">
                                 <span className="bg-dark/80 px-4 text-cream/40 backdrop-blur-sm">Already have an account?</span>
                             </div>
                         </div>

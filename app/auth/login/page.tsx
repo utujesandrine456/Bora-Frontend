@@ -62,7 +62,7 @@ export default function LoginPage() {
                         <div className="w-10 h-10 border-2 border-cream/30 bg-dark rounded-full flex items-center justify-center transition-all group-hover:border-cream group-hover:rotate-12 duration-500 overflow-hidden shadow-2xl shadow-cream/20">
                             <img src="/logo.png" alt="BORA Logo" className="w-full h-full object-cover" />
                         </div>
-                        <span className="text-3xl font-bold tracking-tight text-cream transition-all duration-700">
+                        <span className="text-3xl font-bold text-cream transition-all duration-700">
                             Bora
                         </span>
                     </Link>
@@ -119,7 +119,7 @@ export default function LoginPage() {
                     </div>
 
                     <div className="mb-12">
-                        <h2 className="text-3xl font-bold text-cream tracking-tight">Login</h2>
+                        <h2 className="text-3xl font-bold text-cream">Login</h2>
                         <p className="text-cream/50 mt-2 font-medium">Enter your credentials to access your BORA space.</p>
                     </div>
 

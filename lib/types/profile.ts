@@ -62,6 +62,9 @@ export interface SocialLinks {
 }
 
 export interface TalentProfile {
+    _id?: string;
+    jobId?: string;
+    createdAt?: string;
     firstName: string;
     lastName: string;
     email: string;

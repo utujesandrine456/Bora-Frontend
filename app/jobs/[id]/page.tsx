@@ -1,6 +1,6 @@
 'use client';
 
-import React, { use, useState } from 'react';
+import React from 'react';
 import {
   MapPin,
   Calendar,
@@ -47,117 +47,16 @@ interface Job {
   applicants: Applicant[];
 }
 
-// Dynamic mock data for different jobs
-const JOBS_METADATA: Record<string, Job> = {
-  '1': {
-    title: 'Senior Frontend Developer',
-    location: 'Remote',
-    postedDate: '2026-04-05',
-    applicantsCount: 45,
-    description: 'We are looking for an experienced Frontend Developer to join our team. You will be responsible for building responsive web applications using modern frameworks and best practices.',
-    skills: ['React', 'TypeScript', 'Tailwind CSS', 'Next.js', 'GraphQL'],
-    requirements: { experience: 'Senior (5+ years)', education: "Bachelor's Degree", location: 'Remote' },
-    summary: { total: 45, screened: 12, shortlisted: 5 },
-    applicants: [
-      { name: 'Alex Johnson', skills: 'React, TypeScript, Node.js', experience: '6 years experience', match: 92 },
-      { name: 'Sarah Williams', skills: 'React, JavaScript, CSS', experience: '4 years experience', match: 85 },
-      { name: 'Michael Chen', skills: 'Vue, TypeScript, React', experience: '7 years experience', match: 88 },
-      { name: 'Emma Davis', skills: 'React, Redux, GraphQL', experience: '5 years experience', match: 90 },
-    ]
-  },
-  '2': {
-    title: 'Product Designer',
-    location: 'San Francisco',
-    postedDate: '2026-04-03',
-    applicantsCount: 32,
-    description: 'Join our design team to create beautiful and intuitive user experiences. You will work closely with product managers and engineers to bring features to life from ideation to launch.',
-    skills: ['Figma', 'UI/UX Design', 'Design Systems', 'Prototyping', 'User Research'],
-    requirements: { experience: 'Mid-Senior (4+ years)', education: "Bachelor's in Design/HCI", location: 'San Francisco (Hybrid)' },
-    summary: { total: 32, screened: 8, shortlisted: 3 },
-    applicants: [
-      { name: 'Chloe Miller', skills: 'Figma, Adobe XD, UI Design', experience: '5 years experience', match: 95 },
-      { name: 'James Wilson', skills: 'Product Thinking, Figma, UX', experience: '4 years experience', match: 87 },
-      { name: 'Olivia Brown', skills: 'Research, Figma, Prototyping', experience: '6 years experience', match: 91 },
-    ]
-  },
-  '3': {
-    title: 'Data Scientist',
-    location: 'New York',
-    postedDate: '2026-04-01',
-    applicantsCount: 28,
-    description: 'We are seeking a Data Scientist to help us extract value from our data. You will be responsible for building machine learning models and providing actionable insights to the business.',
-    skills: ['Python', 'R', 'SQL', 'Machine Learning', 'TensorFlow', 'Statistics'],
-    requirements: { experience: 'Mid-Level (3+ years)', education: "Master's or PhD in STEM", location: 'New York (On-site)' },
-    summary: { total: 28, screened: 10, shortlisted: 4 },
-    applicants: [
-      { name: 'David Lee', skills: 'Python, PyTorch, SQL', experience: '4 years experience', match: 89 },
-      { name: 'Sophia Garcia', skills: 'R, Statistics, Data Viz', experience: '5 years experience', match: 93 },
-    ]
-  },
-  '4': {
-    title: 'DevOps Engineer',
-    location: 'Remote',
-    postedDate: '2026-03-28',
-    applicantsCount: 19,
-    description: 'Help us build and scale our infrastructure. You will be responsible for automating our deployments, monitoring system health, and ensuring high availability.',
-    skills: ['AWS', 'Docker', 'Kubernetes', 'CI/CD', 'Terraform', 'Linux'],
-    requirements: { experience: 'Senior (6+ years)', education: "BS in Computer Science", location: 'Remote' },
-    summary: { total: 19, screened: 5, shortlisted: 2 },
-    applicants: [
-      { name: 'Lucas Scott', skills: 'AWS, Terraform, K8s', experience: '7 years experience', match: 94 },
-      { name: 'Maya Patel', skills: 'Docker, Jenkins, Python', experience: '5 years experience', match: 86 },
-    ]
-  },
-  '5': {
-    title: 'Backend Engineer',
-    location: 'Austin',
-    postedDate: '2026-03-25',
-    applicantsCount: 38,
-    description: 'Design and implement robust server-side logic and database schemas. You will work on high-performance APIs and ensure the scalability of our backend systems.',
-    skills: ['Node.js', 'Go', 'PostgreSQL', 'Redis', 'Microservices', 'gRPC'],
-    requirements: { experience: 'Mid-Senior (5+ years)', education: "BS/MS in CS", location: 'Austin (Remote Friendly)' },
-    summary: { total: 38, screened: 15, shortlisted: 6 },
-    applicants: [
-      { name: 'Ethan Hunt', skills: 'Go, PostgreSQL, Redis', experience: '6 years experience', match: 91 },
-      { name: 'Ava Johnson', skills: 'Node.js, Express, Mongo', experience: '4 years experience', match: 84 },
-    ]
-  },
-  '6': {
-    title: 'Mobile Developer',
-    location: 'Remote',
-    postedDate: '2026-03-22',
-    applicantsCount: 24,
-    description: 'Build premium mobile experiences for iOS and Android. You will be responsible for developing high-impact features and ensuring a smooth mobile user experience.',
-    skills: ['React Native', 'Swift', 'Kotlin', 'Firebase', 'Mobile CI/CD'],
-    requirements: { experience: 'Mid-Level (3+ years)', education: "BS in CS", location: 'Remote' },
-    summary: { total: 24, screened: 7, shortlisted: 2 },
-    applicants: [
-      { name: 'Noah Reed', skills: 'React Native, TypeScript', experience: '3 years experience', match: 88 },
-      { name: 'Isabella Ross', skills: 'Swift, SwiftUI, iOS', experience: '5 years experience', match: 96 },
-    ]
-  },
-  '7': {
-    title: 'QA Engineer',
-    location: 'Boston',
-    postedDate: '2026-03-18',
-    applicantsCount: 15,
-    description: 'Ensure the quality and reliability of our products. You will build automated test suites, perform manual testing, and work closely with developers to fix bugs.',
-    skills: ['Selenium', 'Jest', 'Cypress', 'Load Testing', 'API Testing', 'Bug Reporting'],
-    requirements: { experience: 'Junior-Mid (2+ years)', education: "BS in CS or similar", location: 'Boston (On-site)' },
-    summary: { total: 15, screened: 4, shortlisted: 1 },
-    applicants: [
-      { name: 'William Chen', skills: 'Cypress, Jest, Automation', experience: '3 years experience', match: 85 },
-    ]
-  }
-};
-
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { jobsApi } from '@/lib/api/jobs';
 import { screeningApi } from '@/lib/api/screening';
+import { profilesApi } from '@/lib/api/profiles';
 
 export default function JobDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const router = useRouter();
   const [job, setJob] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [screening, setScreening] = useState(false);
@@ -166,23 +65,41 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
     const fetchJobData = async () => {
       try {
         setLoading(true);
-        const data = await jobsApi.getJobById(id);
-        
-        // Enrich data for UI if needed
+        const [data, profilesRes] = await Promise.all([
+          jobsApi.getJobById(id),
+          profilesApi.getProfiles({ jobId: id, limit: 100 })
+        ]);
+
+        const applicants = profilesRes.data.map((p: any) => ({
+          name: `${p.firstName} ${p.lastName}`,
+          skills: p.headline || 'Candidate',
+          experience: p.experience?.[0]?.title || 'Professional',
+          match: p.score || 0
+        }));
+
+        const screened = applicants.filter(a => a.match > 0).length;
+        const shortlisted = applicants.filter(a => a.match >= 85).length;
+
         const enrichedJob = {
           ...data,
           postedDate: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : 'Recently',
-          applicantsCount: Math.floor(Math.random() * 20) + 5, // Mock count since no profiles relation yet
+          applicantsCount: profilesRes.total || applicants.length,
           requirements: {
-            experience: 'Med-Senior',
-            education: "Bachelor's Degree",
+            experience: data.experienceLevel || 'Mid-Senior',
+            education: data.education || "Bachelor's Degree",
             location: data.location || 'Remote'
           },
-          summary: { total: 0, screened: 0, shortlisted: 0 },
-          applicants: []
+          summary: {
+            total: profilesRes.total || applicants.length,
+            screened,
+            shortlisted
+          },
+          applicants,
+          skills: data.skills || data.requirements || []
         };
         setJob(enrichedJob);
       } catch (error) {
+        console.error(error);
         toast.error('Failed to load job details');
       } finally {
         setLoading(false);
@@ -197,6 +114,8 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
     try {
       await screeningApi.triggerScreening(id);
       toast.success('Screening started successfully!', { id: toastId });
+      // Redirect to results after a short delay or immediately
+      router.push(`/screening/results?jobId=${id}`);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to start screening', { id: toastId });
     } finally {
@@ -208,7 +127,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
     return (
       <div className="flex flex-col h-full bg-dark min-h-screen items-center justify-center">
         <div className="w-12 h-12 border-4 border-cream border-t-transparent rounded-full animate-spin opacity-20"></div>
-        <p className="text-cream/40 font-bold tracking-widest text-sm uppercase mt-4">Loading Job Details...</p>
+        <p className="text-cream/40 font-bold text-sm mt-4">Loading job details...</p>
       </div>
     );
   }
@@ -229,16 +148,16 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
       <div className="flex-1 p-8 overflow-y-auto">
         <div className="max-w-[1280px] mx-auto pb-20">
           {/* Back button */}
-          <Link href="/jobs" className="flex items-center gap-2 text-cream/60 hover:text-cream text-sm uppercase tracking-widest font-bold mb-10 transition-colors group w-fit">
+          <Link href="/jobs" className="flex items-center gap-2 text-cream/60 hover:text-cream text-sm font-bold mb-10 transition-colors group w-fit">
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-            <span>Back to Jobs</span>
+            <span>Back to jobs</span>
           </Link>
 
           {/* Header Section */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 pb-8 border-b border-cream/20">
             <div>
-              <h1 className="text-5xl md:text-6xl font-black text-cream tracking-widest uppercase mb-4">{job.title}</h1>
-              <div className="flex flex-wrap items-center gap-6 text-cream/60 font-bold uppercase tracking-wider text-xs">
+              <h1 className="text-5xl md:text-6xl font-black text-cream mb-4">{job.title}</h1>
+              <div className="flex flex-wrap items-center gap-6 text-cream/60 font-bold text-xs">
                 <div className="flex items-center gap-2">
                   <div className="p-1 border border-cream/20 rounded-md bg-cream/5">
                     <MapPin className="w-4 h-4 text-cream" />
@@ -266,7 +185,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
                   Edit Job
                 </Button>
               </Link>
-              <Badge variant="success" className="px-10 py-4 text-sm font-black uppercase tracking-widest">
+              <Badge variant="success" className="px-10 py-4 text-sm font-black">
                 Open
               </Badge>
             </div>
@@ -279,9 +198,9 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
             <div className="lg:col-span-2 space-y-10">
               {/* Job Overview */}
               <Card padding="lg">
-                <h2 className="text-[22px] font-black text-cream uppercase tracking-widest mb-6 flex items-center gap-3">
+                <h2 className="text-[22px] font-black text-cream mb-6 flex items-center gap-3">
                   <div className="w-2 h-8 bg-cream rounded-md"></div>
-                  Job Overview
+                  Job overview
                 </h2>
                 <p className="text-cream/80 leading-relaxed font-medium text-lg">
                   {job.description}
@@ -290,9 +209,9 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
 
               {/* Technical Requirements */}
               <Card padding="lg">
-                <h2 className="text-[22px] font-black text-cream uppercase tracking-widest mb-8 flex items-center gap-3">
+                <h2 className="text-[22px] font-black text-cream mb-8 flex items-center gap-3">
                   <div className="w-2 h-8 bg-cream rounded-md"></div>
-                  Technical Requirements
+                  Technical requirements
                 </h2>
                 <div className="flex flex-wrap gap-3">
                   {job.skills.map((skill: string) => (
@@ -303,24 +222,34 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
                 </div>
               </Card>
 
-              {/* Applicants List */}
               <Card padding="lg">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12 border-b border-cream/10 pb-6">
-                  <h2 className="text-[22px] font-black text-cream uppercase tracking-widest">Applicants ({job.applicantsCount})</h2>
-                  <Button 
-                    variant="primary" 
-                    icon={Play} 
-                    size="md" 
-                    className="px-8"
-                    onClick={handleRunScreening}
-                    disabled={screening}
-                  >
-                    {screening ? 'Screening...' : 'Run AI Screening'}
-                  </Button>
+                  <h2 className="text-[22px] font-black text-cream">Applicants ({job.applicantsCount})</h2>
+                  {job.status === 'closed' ? (
+                    <div className="px-8 py-4 bg-red-500/10 border border-red-500/20 rounded-md text-red-500 font-bold text-center">
+                      This position is currently closed
+                    </div>
+                  ) : (
+                    <div className="flex gap-4">
+                      <Link href={`/apply/${job._id}`} className="flex-1">
+                        <Button className="w-full h-14 bg-cream text-dark hover:bg-white font-black text-lg rounded-md transition-all shadow-xl shadow-cream/10">
+                          Apply for this Position
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setScreening(true)}
+                        disabled={screening}
+                        className="h-14 px-8 border-cream/20 text-cream hover:bg-cream/5 font-bold"
+                      >
+                        {screening ? 'Processing...' : 'Run AI Screening'}
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4">
-                  {job.applicants.map((applicant: Applicant) => (
+                  {job.applicants.map((applicant: any) => (
                     <div key={applicant.name} className="p-8 border border-cream/20 bg-dark rounded-md hover:border-cream hover:bg-cream/5 transition-all group cursor-pointer relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-cream/5 rounded-md -mr-16 -mt-16 group-hover:bg-cream/10 transition-colors"></div>
                       <div className="flex items-start justify-between relative z-10">
@@ -329,15 +258,15 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
                             <Users className="w-8 h-8" />
                           </div>
                           <div>
-                            <h3 className="font-black text-cream uppercase tracking-widest text-xl mb-1">{applicant.name}</h3>
-                            <p className="text-cream/60 font-bold text-sm uppercase tracking-wider mb-2">{applicant.skills}</p>
-                            <p className="text-cream/40 font-bold text-[10px] tracking-[0.2em] uppercase">{applicant.experience}</p>
+                            <h3 className="font-black text-cream text-xl mb-1">{applicant.name}</h3>
+                            <p className="text-cream/60 font-bold text-sm mb-2">{applicant.skills}</p>
+                            <p className="text-cream/40 font-bold text-[10px]">{applicant.experience}</p>
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="flex flex-col items-end">
                             <span className="text-4xl font-black text-cream leading-none">{applicant.match}%</span>
-                            <span className="text-cream/60 font-black text-[10px] uppercase tracking-[0.2em] mt-2">Score Match</span>
+                            <span className="text-cream/60 font-black text-[10px] mt-2">Score match</span>
                           </div>
                         </div>
                       </div>
@@ -351,45 +280,45 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
             <div className="space-y-10">
               {/* Quick Info Card */}
               <Card padding="lg">
-                <h2 className="text-[22px] font-black text-cream uppercase tracking-widest mb-10 flex items-center gap-3">
+                <h2 className="text-[22px] font-black text-cream mb-10 flex items-center gap-3">
                   <div className="w-2 h-8 bg-cream"></div>
-                  Quick Info
+                  Quick info
                 </h2>
                 <div className="space-y-10">
                   <div className="flex flex-col gap-2">
-                    <label className="text-cream/40 font-black text-[10px] uppercase tracking-[0.2em]">Experience Level</label>
-                    <span className="text-cream font-bold uppercase tracking-widest text-sm">{job.requirements.experience}</span>
+                    <label className="text-cream/40 font-black text-[10px]">Experience Level</label>
+                    <span className="text-cream font-bold text-sm">{job.requirements.experience}</span>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-cream/40 font-black text-[10px] uppercase tracking-[0.2em]">Education</label>
-                    <span className="text-cream font-bold uppercase tracking-widest text-sm">{job.requirements.education}</span>
+                    <label className="text-cream/40 font-black text-[10px]">Education</label>
+                    <span className="text-cream font-bold text-sm">{job.requirements.education}</span>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-cream/40 font-black text-[10px] uppercase tracking-[0.2em]">Location Type</label>
-                    <span className="text-cream font-bold uppercase tracking-widest text-sm">{job.requirements.location}</span>
+                    <label className="text-cream/40 font-black text-[10px]">Location Type</label>
+                    <span className="text-cream font-bold text-sm">{job.requirements.location}</span>
                   </div>
                 </div>
               </Card>
 
               {/* Application Summary Card */}
               <Card padding="lg" className="border-cream bg-cream">
-                <h2 className="text-[22px] font-black mb-10 text-dark uppercase tracking-widest flex items-center gap-3">
+                <h2 className="text-[22px] font-black mb-10 text-dark flex items-center gap-3">
                   <div className="w-2 h-8 bg-dark"></div>
                   Summary
                 </h2>
                 <div className="space-y-8 text-dark">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold uppercase tracking-widest text-xs">Total Applicants</span>
+                    <span className="font-bold text-xs">Total applicants</span>
                     <span className="font-black text-3xl">{job.summary.total}</span>
                   </div>
                   <div className="h-px bg-dark/20" />
                   <div className="flex items-center justify-between">
-                    <span className="font-bold uppercase tracking-widest text-xs">Screened</span>
+                    <span className="font-bold text-xs">Screened</span>
                     <span className="font-black text-3xl">{job.summary.screened}</span>
                   </div>
                   <div className="h-px bg-dark/20" />
                   <div className="flex items-center justify-between">
-                    <span className="font-bold uppercase tracking-widest text-xs">Shortlisted</span>
+                    <span className="font-bold text-xs">Shortlisted</span>
                     <span className="font-black text-3xl relative">
                       {job.summary.shortlisted}
                       <span className="absolute -top-1 -right-4 w-2 h-2 bg-black rounded-full animate-pulse"></span>
