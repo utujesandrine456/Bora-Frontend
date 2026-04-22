@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Bell,
     Check,
@@ -13,28 +13,80 @@ import {
 import TopNav from '@/components/TopNav';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
-
-const INITIAL_NOTIFICATIONS = [
-    { id: 1, type: 'application', title: 'New Application Received', message: 'Alexander Chen applied for Senior Backend Engineer.', time: '10 mins ago', read: false, icon: UserPlus, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-    { id: 2, type: 'message', title: 'Message from Candidate', message: 'Sarah Thompson replied to your interview request.', time: '1 hour ago', read: false, icon: MessageSquare, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-    { id: 3, type: 'system', title: 'System Update', message: 'Platform maintenance scheduled for this weekend.', time: '3 hours ago', read: true, icon: AlertCircle, color: 'text-amber-400', bg: 'bg-amber-400/10' },
-    { id: 4, type: 'job', title: 'Job Posting Expiring', message: 'Your posting for "Product Designer" expires in 2 days.', time: '1 day ago', read: true, icon: Briefcase, color: 'text-purple-400', bg: 'bg-purple-400/10' },
-    { id: 5, type: 'application', title: 'Candidate Shortlisted', message: 'Michael Laurent has been moved to Shortlisted by the hiring team.', time: '2 days ago', read: true, icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-];
+import { notificationsApi } from '@/lib/api/notifications';
+import { Notification } from '@/lib/api/types';
+import toast from 'react-hot-toast';
 
 export default function NotificationsPage() {
-    const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchNotifications = async () => {
+        try {
+            setLoading(true);
+            const data = await notificationsApi.getNotifications();
+            setNotifications(data);
+        } catch (error) {
+            console.error('Failed to fetch notifications:', error);
+            toast.error('Failed to load notifications');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
 
     const unreadCount = notifications.filter(n => !n.read).length;
 
-    const markAllAsRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, read: true })));
+    const markAllAsRead = async () => {
+        try {
+            const unread = notifications.filter(n => !n.read);
+            if (unread.length === 0) return;
+            
+            toast.loading('Marking all as read...', { id: 'mark-all' });
+            await Promise.all(unread.map(n => notificationsApi.markAsRead(n._id)));
+            
+            setNotifications(notifications.map(n => ({ ...n, read: true })));
+            toast.success('All marked as read', { id: 'mark-all' });
+        } catch (error) {
+            toast.error('Failed to mark all as read', { id: 'mark-all' });
+        }
     };
 
-    const toggleReadStatus = (id: number) => {
-        setNotifications(notifications.map(n =>
-            n.id === id ? { ...n, read: !n.read } : n
-        ));
+    const toggleReadStatus = async (id: string, currentStatus: boolean) => {
+        if (currentStatus) return; // Backend may not support marking as unread, sticking to read
+        try {
+            await notificationsApi.markAsRead(id);
+            setNotifications(notifications.map(n =>
+                n._id === id ? { ...n, read: true } : n
+            ));
+        } catch (error) {
+            toast.error('Failed to update notification');
+        }
+    };
+
+    const getIconForType = (type: string) => {
+        switch (type) {
+            case 'application': return UserPlus;
+            case 'message': return MessageSquare;
+            case 'system': return AlertCircle;
+            case 'job': return Briefcase;
+            case 'screening': return CheckCircle2;
+            default: return Bell;
+        }
+    };
+
+    const getColorForType = (type: string) => {
+        switch (type) {
+            case 'application': return { color: 'text-blue-400', bg: 'bg-blue-400/10' };
+            case 'message': return { color: 'text-emerald-400', bg: 'bg-emerald-400/10' };
+            case 'system': return { color: 'text-amber-400', bg: 'bg-amber-400/10' };
+            case 'job': return { color: 'text-purple-400', bg: 'bg-purple-400/10' };
+            case 'screening': return { color: 'text-emerald-400', bg: 'bg-emerald-400/10' };
+            default: return { color: 'text-cream/40', bg: 'bg-cream/10' };
+        }
     };
 
     return (
@@ -64,11 +116,18 @@ export default function NotificationsPage() {
 
                 {/* Notifications List */}
                 <div className="space-y-4">
-                    {notifications.map((notification) => {
-                        const Icon = notification.icon;
+                    {loading ? (
+                        [1, 2, 3].map(i => (
+                            <div key={i} className="h-24 w-full bg-cream/5 animate-pulse rounded-md border border-cream/10" />
+                        ))
+                    ) : notifications.map((notification) => {
+                        const Icon = getIconForType(notification.type);
+                        const styles = getColorForType(notification.type);
+                        const timeStr = new Date(notification.createdAt).toLocaleDateString();
+
                         return (
                             <Card
-                                key={notification.id}
+                                key={notification._id}
                                 className={`p-5 transition-all duration-300 relative group overflow-hidden ${notification.read ? 'border-cream/5 bg-transparent' : 'border-cream/20 bg-cream/5'
                                     }`}
                             >
@@ -77,8 +136,8 @@ export default function NotificationsPage() {
                                 )}
 
                                 <div className="flex items-start gap-5">
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${notification.bg}`}>
-                                        <Icon className={`w-6 h-6 ${notification.color}`} />
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${styles.bg}`}>
+                                        <Icon className={`w-6 h-6 ${styles.color}`} />
                                     </div>
 
                                     <div className="flex-1 min-w-0">
@@ -87,24 +146,21 @@ export default function NotificationsPage() {
                                                 {notification.title}
                                             </h3>
                                             <span className="text-xs font-bold text-cream/40 whitespace-nowrap hidden sm:block">
-                                                {notification.time}
+                                                {new Date(notification.createdAt).toLocaleDateString()}
                                             </span>
                                         </div>
                                         <p className={`text-sm ${notification.read ? 'text-cream/50' : 'text-cream/70 font-medium'} max-w-2xl`}>
                                             {notification.message}
                                         </p>
-                                        <span className="text-xs font-bold text-cream/40 mt-2 sm:hidden block">
-                                            {notification.time}
-                                        </span>
                                     </div>
 
                                     <div className="shrink-0 flex items-center gap-2 opactiy-0 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
-                                            onClick={() => toggleReadStatus(notification.id)}
+                                            onClick={() => toggleReadStatus(notification._id, notification.read)}
                                             className="p-2 hover:bg-cream/10 rounded-md text-cream/50 hover:text-cream transition-colors"
-                                            title={notification.read ? "Mark as unread" : "Mark as read"}
+                                            title={notification.read ? "Read" : "Mark as read"}
                                         >
-                                            {notification.read ? <Bell className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                                            {notification.read ? <Check className="w-4 h-4 text-emerald-500" /> : <CheckCircle2 className="w-4 h-4" />}
                                         </button>
                                     </div>
                                 </div>

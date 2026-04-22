@@ -22,7 +22,15 @@ export const authApi = {
     if (typeof token === 'string' && typeof window !== 'undefined') {
       localStorage.setItem('token', token);
       if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        const loggedInUser = response.data.user;
+        // Restore any previously saved photo from the dedicated key (survives logout)
+        const photoKey = `bora_photo_${loggedInUser.email || loggedInUser.id || (loggedInUser as any)._id}`;
+        const savedPhoto = localStorage.getItem(photoKey);
+        const userWithPhoto = savedPhoto
+          ? { ...loggedInUser, id: loggedInUser.id || (loggedInUser as any)._id, photo: savedPhoto }
+          : { ...loggedInUser, id: loggedInUser.id || (loggedInUser as any)._id };
+        localStorage.setItem('user', JSON.stringify(userWithPhoto));
+        console.log('User stored with photo restoration:', !!savedPhoto);
       }
       console.log('Token and user info successfully stored in localStorage');
     } else if (token) {

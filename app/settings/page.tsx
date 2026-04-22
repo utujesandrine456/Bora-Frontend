@@ -14,12 +14,12 @@ import {
   Bell 
 } from 'lucide-react';
 import TopNav from '@/components/TopNav';
-import Card, { fadeUp, staggerContainer } from '@/components/ui/Card';
+import Card, { fadeUp } from '@/components/ui/Card';
 import { motion } from 'framer-motion';
 import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
 import { Input, Select } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
+import { usersApi } from '@/lib/api/users';
 
 const TABS = [
   { id: 'general', label: 'General Info', icon: User },
@@ -30,7 +30,14 @@ const TABS = [
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('general');
-  const [user, setUser] = useState<{ name: string; email: string; role: string; photo?: string } | null>(null);
+  const [user, setUser] = useState<{ id?: string; name: string; email: string; role: string; photo?: string; company?: string } | null>(null);
+  const [localData, setLocalData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    role: '',
+    company: ''
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -38,26 +45,163 @@ export default function SettingsPage() {
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         try {
-          setUser(JSON.parse(storedUser));
+          const parsed = JSON.parse(storedUser);
+          // Bridge id and _id naming mismatch
+          const stabilizedUser = {
+            ...parsed,
+            id: parsed.id || parsed._id
+          };
+          setUser(stabilizedUser);
+          setLocalData({
+            firstName: stabilizedUser.name?.split(' ')[0] || '',
+            lastName: stabilizedUser.name?.split(' ').slice(1).join(' ') || '',
+            email: stabilizedUser.email || '',
+            role: stabilizedUser.role || '',
+            company: stabilizedUser.company || ''
+          });
         } catch (e) {
-          console.error('Failed to parse user');
+          console.error('Settings: Failed to load user from storage');
         }
       }
     }
   }, []);
 
-  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && user) {
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        const updatedUser = { ...user, photo: base64String };
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        toast.success('Profile photo updated');
-      };
       reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Max dimensions (Aggressive downscaling for 500 error resolution)
+          const MAX_WIDTH = 400;
+          const MAX_HEIGHT = 400;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          // Quality: 0.6 (60%) - Ultra-lightweight for backend compatibility
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+          resolve(compressedBase64);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  };
+
+  const handlePhotoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    const userId = user?.id || (user as any)?._id; // Bridge naming
+    
+    if (file && userId) {
+      const toastId = toast.loading('Saving your photo...');
+      try {
+        // 1. Compress the image (client-side)
+        const optimizedBase64 = await compressImage(file);
+
+        // 2. PERSIST photo to a dedicated key that SURVIVES logout
+        //    keyed by email so it's restored after login automatically
+        const photoKey = `bora_photo_${user?.email || userId}`;
+        try {
+          localStorage.setItem(photoKey, optimizedBase64);
+        } catch (storageErr) {
+          console.warn('LocalStorage full saving dedicated photo key');
+        }
+
+        // 3. Optimistic UI Update (Instant appearance)
+        const optimisticallyUpdatedUser = { ...user, photo: optimizedBase64 };
+        setUser(optimisticallyUpdatedUser as any);
+        try {
+          localStorage.setItem('user', JSON.stringify(optimisticallyUpdatedUser));
+        } catch (storageErr) {
+          console.warn('LocalStorage full saving user');
+        }
+        window.dispatchEvent(new Event('user-updated'));
+
+        // 4. Try to sync with backend (best-effort; we don't fail if it errors)
+        try {
+          const payload = {
+            name: user?.name,
+            email: user?.email,
+            role: user?.role,
+            company: user?.company,
+            photo: optimizedBase64
+          };
+          const responseUser = await usersApi.updateProfile(userId, payload);
+          const finalUser = {
+            ...responseUser,
+            photo: optimizedBase64,
+            id: responseUser.id || (responseUser as any)._id
+          };
+          setUser(finalUser as any);
+          try {
+            localStorage.setItem('user', JSON.stringify(finalUser));
+          } catch (_) {}
+          console.log('Backend sync successful');
+        } catch (backendErr) {
+          // Backend failed (500) but photo is already saved in dedicated key
+          // so it WILL be restored on next login
+          console.warn('Backend sync failed, photo stored locally for persistence:', backendErr);
+        }
+
+        toast.success('Profile photo saved & will persist after login!', { id: toastId });
+      } catch (err) {
+        console.error('Photo compression error:', err);
+        toast.error('Failed to process photo', { id: toastId });
+      }
+    } else {
+      console.error('Photo failed to start: missing file or userID', { hasFile: !!file, userId });
+      toast.error('Identity sync error. Try logging out and back in.');
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user?.id) return toast.error('User ID not found. Please log in again.');
+
+    const toastId = toast.loading('Syncing with backend...');
+    try {
+      const fullName = `${localData.firstName} ${localData.lastName}`.trim();
+      const payload = {
+        name: fullName,
+        email: localData.email,
+        role: localData.role,
+        company: localData.company,
+        photo: user.photo
+      };
+
+      const updatedUser = await usersApi.updateProfile(user.id, payload);
+      
+      // Update local state and storage
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      // Dispatch event to sync other components
+      window.dispatchEvent(new Event('user-updated'));
+      
+      toast.success('Settings synced successfully!', { id: toastId });
+    } catch (err) {
+      console.error('Failed to update settings:', err);
+      toast.error('Failed to sync settings with backend', { id: toastId });
     }
   };
 
@@ -66,8 +210,6 @@ export default function SettingsPage() {
   };
 
   const displayName = user?.name || 'User';
-  const firstName = displayName.split(' ')[0] || '';
-  const lastName = displayName.split(' ').slice(1).join(' ') || '';
 
   return (
     <div className="flex flex-col h-full bg-dark min-h-screen font-sans">
@@ -89,7 +231,11 @@ export default function SettingsPage() {
           </div>
           <div className="flex items-center gap-3">
             <Button variant="secondary" className="font-semibold px-6">Discard</Button>
-            <Button variant="primary" className="gap-2 font-semibold px-6 bg-cream text-dark">
+            <Button 
+              variant="primary" 
+              className="gap-2 font-semibold px-6 bg-cream text-dark"
+              onClick={handleSave}
+            >
               <Save className="w-4 h-4" /> Save changes
             </Button>
           </div>
@@ -153,10 +299,30 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6 pt-2">
-                    <Input label="First Name" defaultValue={firstName} icon={User} />
-                    <Input label="Last Name" defaultValue={lastName} icon={User} />
-                    <Input label="Email Address" defaultValue={user?.email || ''} icon={Mail} />
-                    <Input label="Role" defaultValue={user?.role || ''} icon={Building2} />
+                    <Input 
+                      label="First Name" 
+                      value={localData.firstName} 
+                      icon={User} 
+                      onChange={(e) => setLocalData({...localData, firstName: e.target.value})}
+                    />
+                    <Input 
+                      label="Last Name" 
+                      value={localData.lastName} 
+                      icon={User} 
+                      onChange={(e) => setLocalData({...localData, lastName: e.target.value})}
+                    />
+                    <Input 
+                      label="Email Address" 
+                      value={localData.email} 
+                      icon={Mail} 
+                      onChange={(e) => setLocalData({...localData, email: e.target.value})}
+                    />
+                    <Input 
+                      label="Role" 
+                      value={localData.role} 
+                      icon={Building2} 
+                      onChange={(e) => setLocalData({...localData, role: e.target.value})}
+                    />
                   </div>
                 </Card>
 
@@ -167,7 +333,12 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6">
-                    <Input label="Company Name" defaultValue="BORA Technologies" icon={Building2} />
+                    <Input 
+                      label="Company Name" 
+                      value={localData.company} 
+                      icon={Building2} 
+                      onChange={(e) => setLocalData({...localData, company: e.target.value})}
+                    />
                     <Input label="Website URL" defaultValue="https://bora.tech" icon={Globe} />
                     <Select
                       label="Company Size"

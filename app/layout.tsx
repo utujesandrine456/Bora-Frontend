@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Urbanist } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
+import DynamicFavicon from "@/components/DynamicFavicon";
 import { Toaster } from "react-hot-toast";
 
 const urbanist = Urbanist({
@@ -27,6 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full bg-dark">
       <body className={`${urbanist.className} font-medium h-full antialiased bg-dark text-cream`}>
+        <DynamicFavicon />
         <Toaster
           position="top-right"
           toastOptions={{
