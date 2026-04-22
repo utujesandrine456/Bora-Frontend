@@ -16,17 +16,16 @@ apiClient.interceptors.request.use(
       const token = localStorage.getItem('token');
       if (token && config.headers) {
         let cleanToken = token.trim();
+        // Strip accidental surrounding quotes
         if ((cleanToken.startsWith('"') && cleanToken.endsWith('"')) ||
           (cleanToken.startsWith("'") && cleanToken.endsWith("'"))) {
           cleanToken = cleanToken.slice(1, -1);
         }
-
         config.headers.Authorization = `Bearer ${cleanToken}`;
-
-        const url = config.url || '';
-        console.log(`[API Request] ${config.method?.toUpperCase()} ${url} | Token: ${cleanToken.substring(0, 8)}...`);
+        console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url} | Token: ${cleanToken.substring(0, 12)}...`);
       } else {
-        console.warn(`[API Request] ${config.method?.toUpperCase()} ${config.url} | NO TOKEN FOUND`);
+        // No token — this is the most common cause of a 401
+        console.warn(`[API Request] ${config.method?.toUpperCase()} ${config.url} | NO TOKEN IN localStorage — user may not be logged in.`);
       }
     }
     return config;
@@ -41,12 +40,15 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
 
     if (status === 401) {
-      console.warn('Axios Interceptor: 401 detected. Clearing token and redirecting to login.');
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        if (!window.location.pathname.includes('/auth/login')) {
+        const isAuthPage = window.location.pathname.startsWith('/auth/');
+        if (!isAuthPage) {
+          console.warn('[API Client] 401 Unauthorized — clearing session and redirecting to login.');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
           window.location.href = '/auth/login?reason=session_expired';
         }
+        // If already on an auth page, silently reject to avoid redirect loop
       }
     }
     return Promise.reject(error);

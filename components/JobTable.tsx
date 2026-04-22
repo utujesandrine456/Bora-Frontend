@@ -8,6 +8,7 @@ import Badge from './ui/Badge';
 import { jobsApi } from '@/lib/api/jobs';
 import { screeningApi } from '@/lib/api/screening';
 import { profilesApi } from '@/lib/api/profiles';
+import { Job } from '@/lib/api/types';
 import { TalentProfile } from '@/lib/types/profile';
 import toast from 'react-hot-toast';
 import { Zap } from 'lucide-react';
@@ -22,7 +23,8 @@ export default function JobTable() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
 
-  const [jobs, setJobs] = useState<Job[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState('');
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -68,7 +70,7 @@ export default function JobTable() {
           location: job.location || 'Remote',
           posted: job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Recently',
           createdAt: job.createdAt || new Date().toISOString(),
-          applicants: applicantCounts[jobId] || job.applicantsCount || 0,
+          applicants: applicantCounts[jobId ?? ''] || (job as any).applicantsCount || 0,
           status: displayStatus
         };
       });
@@ -331,7 +333,7 @@ export default function JobTable() {
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => handleScreen(job.id)}
+                      onClick={() => handleScreen(job.id ?? '')}
                       className="px-4 py-2 text-xs font-black shadow-none transition-all group-hover:shadow-xl group-hover:shadow-cream/5"
                     >
                       <Zap className="h-3.5 w-3.5" />
@@ -341,7 +343,7 @@ export default function JobTable() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setActiveMenu(activeMenu === job.id ? null : job.id);
+                          setActiveMenu(activeMenu === job.id ? null : job.id ?? null);
                         }}
                         className="p-2 text-cream/40 hover:text-cream hover:bg-cream/10 rounded-md transition-all cursor-pointer"
                       >
@@ -374,7 +376,7 @@ export default function JobTable() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleCloseJob(job.id);
+                                  handleCloseJob(job.id ?? '');
                                   setActiveMenu(null);
                                 }}
                                 className="w-full text-left px-4 py-2.5 text-xs font-bold text-amber-500/80 hover:bg-amber-500/10 hover:text-amber-500 border-b border-cream/5 flex items-center gap-2"
@@ -385,7 +387,7 @@ export default function JobTable() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDeleteJob(job.id);
+                                handleDeleteJob(job.id ?? '');
                                 setActiveMenu(null);
                               }}
                               className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-500/80 hover:bg-red-500/10 hover:text-red-500 flex items-center gap-2"

@@ -34,10 +34,28 @@ export default function Dashboard() {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const [jobs, profilesResponse] = await Promise.all([
-          jobsApi.getJobs(),
-          profilesApi.getProfiles({ limit: 5 })
-        ]);
+
+        // Fetch jobs independently - these should always work
+        let jobs: Job[] = [];
+        try {
+          jobs = await jobsApi.getJobs();
+        } catch (jobsErr) {
+          console.error('Dashboard: Failed to fetch jobs:', jobsErr);
+        }
+
+        // Fetch profiles independently - 401 here should NOT crash the whole page
+        let profilesResponse: { data: TalentProfile[]; total: number } = { data: [], total: 0 };
+        try {
+          profilesResponse = await profilesApi.getProfiles({ limit: 5 });
+        } catch (profilesErr: any) {
+          const status = profilesErr?.response?.status;
+          if (status === 401) {
+            // Token is invalid/expired — interceptor already handles redirect
+            console.warn('Dashboard: 401 on profiles — session may be expired, redirecting...');
+            return; // Let the interceptor redirect to login
+          }
+          console.error('Dashboard: Failed to fetch profiles:', profilesErr);
+        }
 
         // Calculate Stats
         const activeJobs = jobs.filter((j: Job) => j.status !== 'closed' && j.status !== 'archived').length;
@@ -62,7 +80,7 @@ export default function Dashboard() {
           },
           {
             label: 'Screening Tasks',
-            value: (activeJobs * 3).toString(), // Mocked derivation
+            value: (activeJobs * 3).toString(),
             change: '-2',
             trend: 'down',
             icon: ClipboardCheck,
@@ -72,17 +90,17 @@ export default function Dashboard() {
 
         // Map Recent Applicants
         const mappedApplicants = (profilesResponse.data || []).slice(0, 3).map((p: TalentProfile) => ({
-          id: p._id,
+          id: p._id ?? '',
           name: `${p.firstName} ${p.lastName}`,
           role: p.headline || 'Applicant',
-          match: p.matchScore || 85, // Fallback if not screened
+          match: p.matchScore || 85,
           status: p.matchScore && p.matchScore >= 90 ? 'High Match' : 'In Review',
           avatar: `${p.firstName?.[0] || ''}${p.lastName?.[0] || ''}` || '?'
         }));
 
         setRecentApplicants(mappedApplicants);
       } catch (error) {
-        console.error('Dashboard: Failed to fetch real data:', error);
+        console.error('Dashboard: Unexpected error:', error);
       } finally {
         setLoading(false);
       }

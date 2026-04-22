@@ -34,7 +34,7 @@ export default function LoginPage() {
             });
             console.log('Login successful, token set in localStorage. Redirecting...');
             toast.success('Successfully signed in!');
-            window.location.href = '/jobs'; // Force a hard refresh to ensure Sidebar and API clients pick up the token
+            window.location.href = '/dashboard'; // Hard redirect so the token is in localStorage before any authenticated page loads
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : 'Invalid credentials';
             toast.error(message);

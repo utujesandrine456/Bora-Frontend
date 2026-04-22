@@ -9,26 +9,40 @@ export const authApi = {
 
   login: async (data: LoginRequest): Promise<LoginResponse> => {
     const response = await apiClient.post<LoginResponse>('/v1/auth/login', data);
-    console.log('authApi.login response data:', response.data);
+    const raw = response.data as Record<string, unknown>;
 
-    type RawLoginData = { token?: string; accessToken?: string; access_token?: string };
-    const raw = response.data as unknown as RawLoginData;
-    let token = raw.token || raw.accessToken || raw.access_token;
+    console.log('[authApi.login] Raw response data:', raw);
 
-    if (token && typeof token === 'object' && token.accessToken) {
-      token = token.accessToken;
+    // Extract token from any common backend shape:
+    //   { token }  |  { accessToken }  |  { access_token }
+    //   { data: { token } }  |  { data: { accessToken } }
+    const nested = (raw?.data ?? {}) as Record<string, unknown>;
+    const token =
+      (raw?.token as string) ||
+      (raw?.accessToken as string) ||
+      (raw?.access_token as string) ||
+      (nested?.token as string) ||
+      (nested?.accessToken as string) ||
+      (nested?.access_token as string) ||
+      null;
+
+    if (!token || typeof token !== 'string') {
+      console.error('[authApi.login] Token not found or not a string in response. Full response:', raw);
+      throw new Error('Login succeeded but no auth token was returned. Please contact support.');
     }
 
-    if (typeof token === 'string' && typeof window !== 'undefined') {
-      localStorage.setItem('token', token);
-      if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+    const cleanToken = token.trim().replace(/^["']|["']$/g, ''); // strip accidental quotes
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('token', cleanToken);
+
+      // Store user info from wherever the backend puts it
+      const user = raw?.user ?? nested?.user;
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
       }
-      console.log('Token and user info successfully stored in localStorage');
-    } else if (token) {
-      console.error('Token found but it is not a string:', token);
-    } else {
-      console.warn('No token found in login response!', response.data);
+
+      console.log('[authApi.login] Token stored successfully. Preview:', cleanToken.substring(0, 16) + '...');
     }
 
     return response.data;
@@ -38,7 +52,7 @@ export const authApi = {
     try {
       await apiClient.post('/v1/auth/logout');
     } catch (error) {
-      console.error('Logout API call failed:', error);
+      console.error('[authApi.logout] Logout API call failed (non-critical):', error);
     } finally {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');

@@ -204,8 +204,8 @@ export default function CandidateJobs() {
                                                 <div className="text-right">
                                                     <div className="text-[10px] font-black text-cream/30 mb-1">Fit score</div>
                                                     <div className="flex items-center gap-3">
-                                                        {job.match >= 90 && <Target className="w-5 h-5 text-emerald-500" />}
-                                                        <span className={`text-4xl font-black ${job.match >= 90 ? 'text-cream' : 'text-cream/40'}`}>{job.match}%</span>
+                                                        {(job.match ?? 0) >= 90 && <Target className="w-5 h-5 text-emerald-500" />}
+                                                        <span className={`text-4xl font-black ${(job.match ?? 0) >= 90 ? 'text-cream' : 'text-cream/40'}`}>{job.match ?? '--'}%</span>
                                                     </div>
                                                 </div>
                                                 <Button

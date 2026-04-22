@@ -2,22 +2,23 @@
 
 import { Search, Bell } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function TopNav() {
-  const [user] = useState<{ name: string; role: string } | null>(() => {
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         try {
-          return JSON.parse(storedUser);
+          setUser(JSON.parse(storedUser));
         } catch (_e) {
           // ignore
         }
       }
     }
-    return null;
-  });
+  }, []);
 
   const initials = user?.name
     ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)

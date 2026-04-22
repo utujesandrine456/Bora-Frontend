@@ -8,12 +8,12 @@ import {
   ClipboardCheck,
   History,
   Settings,
+  LogOut,
   LucideIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api/auth';
-import toast from 'react-hot-toast';
 
 
 interface MenuItem {
@@ -41,25 +41,24 @@ const candidateMenuItems: MenuItem[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [role] = React.useState<string>(() => {
+  const [role, setRole] = React.useState<string>('admin');
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         try {
           const parsed = JSON.parse(storedUser);
-          return parsed.role?.toLowerCase() || 'admin';
+          setRole(parsed.role?.toLowerCase() || 'admin');
         } catch (_e) {
           // ignore
         }
       }
     }
-    return 'admin';
-  });
+  }, []);
 
-  const handleLogout = () => {
-    authApi.logout();
-    toast.success('Signed out successfully');
-    router.push('/auth/login');
+  const handleLogout = async () => {
+    await authApi.logout(); // clears localStorage + redirects internally
   };
 
   const appRoutes = [
@@ -127,7 +126,7 @@ export default function Sidebar() {
           onClick={handleLogout}
           className="flex items-center gap-3 px-5 py-3.5 rounded-md bg-cream text-dark hover:bg-cream hover:text-dark/80 transition-all w-full group cursor-pointer text-md font-semibold"
         >
-          <History className="w-5 h-5 group-hover:rotate-12 transition-transform opacity-70" />
+          <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform opacity-70" />
           <span>Logout</span>
         </button>
       </div>
