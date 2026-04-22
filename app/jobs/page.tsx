@@ -11,7 +11,7 @@ export default function JobsListingPage() {
       <TopNav />
 
       <div className="flex-1 p-8 overflow-y-auto">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 border-b border-cream/20 pb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-4 border-b border-cream/10 pb-12">
           <div>
             <h1 className="text-4xl md:text-5xl font-black text-cream mb-4">Jobs Portal</h1>
             <p className="text-cream/60 font-medium text-md">Manage and track your active recruitment campaigns</p>

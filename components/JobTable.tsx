@@ -8,8 +8,9 @@ import Badge from './ui/Badge';
 import { jobsApi } from '@/lib/api/jobs';
 import { screeningApi } from '@/lib/api/screening';
 import { profilesApi } from '@/lib/api/profiles';
-import { Job } from '@/lib/api/types';
+import { uploadsApi } from '@/lib/api/uploads';
 import { TalentProfile } from '@/lib/types/profile';
+import { Job } from '@/lib/api/types';
 import toast from 'react-hot-toast';
 import { Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -19,15 +20,47 @@ export default function JobTable() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('latest');
   const [showFilters, setShowFilters] = useState(false);
-
   const [statusFilter, setStatusFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState('');
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const pendingJobIdRef = React.useRef<string | null>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const jobId = pendingJobIdRef.current;
+    if (!file || !jobId) return;
+
+    setUploading(jobId);
+    const id = toast.loading('Importing candidate pool...');
+    try {
+      await uploadsApi.uploadCsv(file, jobId);
+      toast.success('Applicants imported successfully!', { id });
+      fetchJobs();
+    } catch (error: unknown) {
+      const axiosError = error as any;
+      const serverMsg = axiosError?.response?.data?.message || axiosError?.response?.data?.error;
+      const msg = serverMsg || (error instanceof Error ? error.message : 'Import failed');
+      toast.error(`Upload failed: ${msg}`, { id });
+      console.error('CSV Upload Error:', axiosError?.response?.data || error);
+    } finally {
+      setUploading(null);
+      pendingJobIdRef.current = null;
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const triggerUpload = (jobId: string) => {
+    pendingJobIdRef.current = jobId;
+    // Reset before clicking so change event fires even for same file
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    fileInputRef.current?.click();
+  };
 
   const fetchJobs = async () => {
     try {
@@ -70,8 +103,10 @@ export default function JobTable() {
           location: job.location || 'Remote',
           posted: job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Recently',
           createdAt: job.createdAt || new Date().toISOString(),
-          applicants: applicantCounts[jobId ?? ''] || (job as any).applicantsCount || 0,
-          status: displayStatus
+          applicants: applicantCounts[jobId as string] || job.applicantsCount || 0,
+          status: displayStatus,
+          company: job.company || 'BORA',
+          description: job.description || ''
         };
       });
 
@@ -143,7 +178,7 @@ export default function JobTable() {
       const lowerSearch = searchTerm.toLowerCase();
       result = result.filter(job =>
         job.title.toLowerCase().includes(lowerSearch) ||
-        job.location.toLowerCase().includes(lowerSearch)
+        (job.location || '').toLowerCase().includes(lowerSearch)
       );
     }
 
@@ -157,9 +192,9 @@ export default function JobTable() {
 
     result.sort((a, b) => {
       if (sortBy === 'applicants') {
-        return (b.applicants || 0) - (a.applicants || 0);
+        return ((b.applicants || 0) as number) - ((a.applicants || 0) as number);
       }
-      // Latest first (sorting by createdAt string)
+
       const dateA = new Date(a.createdAt || 0).getTime();
       const dateB = new Date(b.createdAt || 0).getTime();
       return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA);
@@ -170,6 +205,14 @@ export default function JobTable() {
 
   return (
     <div className="bg-dark border border-cream/20 overflow-hidden rounded-md">
+      {/* Single shared hidden file input for all rows */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept=".csv,.xlsx,.xls"
+        onChange={handleFileChange}
+      />
       <div className="p-8 border-b border-cream/20 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex-1 max-w-md relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-cream/60" />
@@ -183,7 +226,6 @@ export default function JobTable() {
         </div>
 
         <div className="flex items-center gap-3 relative">
-          {/* Filters Toggle Button */}
           <div className="relative">
             <Button
               variant="secondary"
@@ -273,134 +315,171 @@ export default function JobTable() {
           </thead>
           <tbody className="divide-y divide-cream/10">
             {loading ? (
-              <tr>
-                <td colSpan={6} className="px-8 py-20 text-center bg-dark/50">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="w-8 h-8 border-2 border-cream/20 border-t-cream rounded-full animate-spin"></div>
-                    <p className="text-cream/40 font-semibold text-sm">Loading jobs...</p>
-                  </div>
-                </td>
-              </tr>
+              [1, 2, 3, 4, 5].map((i) => (
+                <tr key={i} className="hover:bg-cream/5 transition-colors">
+                  <td className="px-8 py-6"><div className="h-4 w-32 bg-cream/5 rounded animate-pulse" /><div className="h-3 w-16 bg-cream/5 rounded animate-pulse mt-2" /></td>
+                  <td className="px-8 py-6"><div className="h-4 w-24 bg-cream/5 rounded animate-pulse" /></td>
+                  <td className="px-8 py-6"><div className="h-8 w-24 bg-cream/5 rounded animate-pulse" /></td>
+                  <td className="px-8 py-6"><div className="h-4 w-20 bg-cream/5 rounded animate-pulse" /></td>
+                  <td className="px-8 py-6"><div className="h-6 w-16 bg-cream/5 rounded animate-pulse" /></td>
+                  <td className="px-8 py-6 text-right"><div className="h-8 w-20 bg-cream/5 rounded animate-pulse inline-block" /></td>
+                </tr>
+              ))
             ) : filteredJobs.length > 0 ? filteredJobs.map((job) => (
-              <tr key={job.id} className="hover:bg-cream/5 transition-colors group cursor-pointer">
-                <td className="px-8 py-6">
-                  <Link href={`/jobs/${job.id}`} className="flex items-center gap-4">
-                    <div>
-                      <div className="font-bold text-cream text-[15px] mb-1 group-hover:text-white transition-colors">{job.title}</div>
-                      <div className="text-[14px] font-medium text-cream/40">ID: {String(job.id).slice(-6).toUpperCase()}</div>
-                    </div>
-                  </Link>
-                </td>
-                <td className="px-8 py-6">
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-1.5 text-cream/70 font-medium text-sm">
-                      <MapPin className="h-4 w-4 text-cream/40" />
-                      <span>{job.location}</span>
-                    </div>
-                    <div className="text-[10px] font-black text-cream flex items-center gap-1.5">
-                      <div className="w-1 h-1 rounded-full bg-cream"></div>
-                      {job.type}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-8 py-6">
-                  <div className="flex items-center gap-3">
-                    <div className="flex -space-x-3">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="w-9 h-9 rounded-md border border-dark bg-cream/20 flex items-center justify-center overflow-hidden">
-                          <div className="w-full h-full bg-cream/10"></div>
-                        </div>
-                      ))}
-                      <div className="w-9 h-9 rounded-md border border-cream bg-dark flex items-center justify-center text-[11px] font-black text-cream">
-                        +{job.applicants > 3 ? job.applicants - 3 : 0}
+              <React.Fragment key={job.id}>
+                <tr
+                  onClick={() => setSelectedJobId(selectedJobId === job.id ? null : (job.id as string))}
+                  className={`transition-colors group cursor-pointer ${selectedJobId === job.id ? 'bg-emerald-500/10 border-l-4 border-emerald-500' : 'hover:bg-cream/5 border-l-4 border-transparent'}`}
+                >
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <div className="font-bold text-cream text-[15px] mb-1 group-hover:text-white transition-colors">{job.title}</div>
+                        <div className="text-[14px] font-medium text-cream/40">ID: {String(job.id).slice(-6).toUpperCase()}</div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-8 py-6">
-                  <div className="flex items-center gap-2 text-cream/60 font-medium text-sm">
-                    <Clock className="h-4 w-4 text-cream/40" />
-                    <span>{job.posted}</span>
-                  </div>
-                </td>
-                <td className="px-8 py-6">
-                  <Badge variant={job.status === 'Open' ? 'success' : 'secondary'} className="px-4 py-1.5 rounded-md text-[10px] font-bold">
-                    {job.status}
-                  </Badge>
-                </td>
-                <td className="px-8 py-6 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => handleScreen(job.id ?? '')}
-                      className="px-4 py-2 text-xs font-black shadow-none transition-all group-hover:shadow-xl group-hover:shadow-cream/5"
-                    >
-                      <Zap className="h-3.5 w-3.5" />
-                      Screen
-                    </Button>
-                    <div className="relative">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveMenu(activeMenu === job.id ? null : job.id ?? null);
-                        }}
-                        className="p-2 text-cream/40 hover:text-cream hover:bg-cream/10 rounded-md transition-all cursor-pointer"
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-1.5 text-cream/70 font-medium text-sm">
+                        <MapPin className="h-4 w-4 text-cream/40" />
+                        <span>{job.location}</span>
+                      </div>
+                      <div className="text-[10px] font-black text-cream flex items-center gap-1.5">
+                        <div className="w-1 h-1 rounded-full bg-cream"></div>
+                        {job.type}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-3">
+                      <div className="flex -space-x-3">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="w-9 h-9 rounded-md border border-dark bg-cream/20 flex items-center justify-center overflow-hidden">
+                            <div className="w-full h-full bg-cream/10"></div>
+                          </div>
+                        ))}
+                        <div className="w-9 h-9 rounded-md border border-cream bg-dark flex items-center justify-center text-[11px] font-black text-cream">
+                          +{(job.applicants || 0) > 3 ? (job.applicants as number) - 3 : 0}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-2 text-cream/60 font-medium text-sm">
+                      <Clock className="h-4 w-4 text-cream/40" />
+                      <span>{job.posted}</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <Badge variant={job.status === 'Open' ? 'success' : 'secondary'} className="px-4 py-1.5 rounded-md text-[10px] font-bold">
+                      {job.status}
+                    </Badge>
+                  </td>
+                  <td className="px-8 py-6 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleScreen(job.id as string)}
+                        className="px-4 py-2 text-xs font-black shadow-none transition-all group-hover:shadow-xl group-hover:shadow-cream/5"
                       >
-                        <MoreVertical className="h-5 w-5" />
-                      </button>
+                        <Zap className="h-3.5 w-3.5" />
+                        Actions
+                      </Button>
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveMenu(activeMenu === job.id ? null : job.id as string);
+                          }}
+                          className="p-2 text-cream/40 hover:text-cream hover:bg-cream/10 rounded-md transition-all cursor-pointer"
+                        >
+                          <MoreVertical className="h-5 w-5" />
+                        </button>
 
-                      {activeMenu === job.id && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-10"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveMenu(null);
-                            }}
-                          />
-                          <div className="absolute right-0 mt-2 w-48 bg-dark border border-cream/20 rounded-md shadow-xl z-20 overflow-hidden animate-in fade-in zoom-in duration-100">
-                            <Link
-                              href={`/jobs/${job.id}`}
-                              className="w-full text-left px-4 py-2.5 text-xs font-bold text-cream/70 hover:bg-cream/10 hover:text-cream border-b border-cream/5 flex items-center gap-2"
-                            >
-                              View Details
-                            </Link>
-                            <Link
-                              href={`/jobs/${job.id}/edit`}
-                              className="w-full text-left px-4 py-2.5 text-xs font-bold text-cream/70 hover:bg-cream/10 hover:text-cream border-b border-cream/5 flex items-center gap-2"
-                            >
-                              Edit Job
-                            </Link>
-                            {job.status !== 'Closed' && (
+                        {activeMenu === job.id && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-10"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveMenu(null);
+                              }}
+                            />
+                            <div className="absolute right-0 mt-2 w-48 bg-dark border border-cream/20 rounded-md shadow-xl z-20 overflow-hidden animate-in fade-in zoom-in duration-100">
+                              <Link
+                                href={`/jobs/${job.id}`}
+                                className="w-full text-left px-4 py-2.5 text-xs font-bold text-cream/70 hover:bg-cream/10 hover:text-cream border-b border-cream/5 flex items-center gap-2"
+                              >
+                                View Details
+                              </Link>
+                              <Link
+                                href={`/jobs/${job.id}/edit`}
+                                className="w-full text-left px-4 py-2.5 text-xs font-bold text-cream/70 hover:bg-cream/10 hover:text-cream border-b border-cream/5 flex items-center gap-2"
+                              >
+                                Edit Job
+                              </Link>
+                              {job.status !== 'Closed' && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCloseJob(job.id as string);
+                                    setActiveMenu(null);
+                                  }}
+                                  className="w-full text-left px-4 py-2.5 text-xs font-bold text-amber-500/80 hover:bg-amber-500/10 hover:text-amber-500 border-b border-cream/5 flex items-center gap-2"
+                                >
+                                  Close Job
+                                </button>
+                              )}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleCloseJob(job.id ?? '');
+                                  handleDeleteJob(job.id as string);
                                   setActiveMenu(null);
                                 }}
-                                className="w-full text-left px-4 py-2.5 text-xs font-bold text-amber-500/80 hover:bg-amber-500/10 hover:text-amber-500 border-b border-cream/5 flex items-center gap-2"
+                                className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-500/80 hover:bg-red-500/10 hover:text-red-500 flex items-center gap-2"
                               >
-                                Close Job
+                                Delete Job
                               </button>
-                            )}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteJob(job.id ?? '');
-                                setActiveMenu(null);
-                              }}
-                              className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-500/80 hover:bg-red-500/10 hover:text-red-500 flex items-center gap-2"
-                            >
-                              Delete Job
-                            </button>
-                          </div>
-                        </>
-                      )}
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </td>
-              </tr>
+                  </td>
+                </tr>
+                {selectedJobId === job.id && (
+                  <tr className="bg-cream/5 shadow-inner">
+                    <td colSpan={6} className="px-8 py-4">
+                      <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+                        <div className="text-sm font-medium text-cream/60">
+                          {job.applicants || 0} Total applicants for this position.
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Link href={`/jobs/${job.id}`}>
+                            <Button variant="secondary" size="sm" className="bg-dark border-cream/20 font-bold transition-all hover:bg-cream/10">
+                              View Details
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            disabled={uploading === job.id}
+                            className="bg-dark border-cream/20 font-bold transition-all hover:bg-amber-500/20 hover:text-amber-500 hover:border-amber-500/40"
+                            onClick={() => triggerUpload(job.id as string)}
+                          >
+                            {uploading === job.id ? 'Importing...' : 'Import CSV / Excel'}
+                          </Button>
+                          <Button variant="primary" size="sm" className="bg-emerald-500 text-dark font-black hover:bg-emerald-400 border-none transition-all" onClick={() => handleScreen(job.id as string)}>
+                            Screen Candidates
+                          </Button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             )) : (
               <tr>
                 <td colSpan={6} className="px-8 py-20 text-center bg-dark/50">

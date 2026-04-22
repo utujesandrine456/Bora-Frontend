@@ -23,6 +23,7 @@ import Button from '@/components/ui/Button';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { jobsApi } from '@/lib/api/jobs';
+import { profilesApi } from '@/lib/api/profiles';
 import toast from 'react-hot-toast';
 
 // Mock Data fallback removed
@@ -33,6 +34,12 @@ export default function ScreeningHistoryPage() {
     interface HistoryEntry { id: string | undefined; role: string; date: string | undefined; candidates: number; avgScore: number; topMatch: string; status: string; matchQuality: string; }
     const [history, setHistory] = useState<HistoryEntry[]>([]);
     const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({
+        totalAssessments: 0,
+        avgMatchQuality: 0,
+        avgCandidates: 0,
+        efficiency: 94
+    });
 
     useEffect(() => {
         const fetchHistory = async () => {
@@ -41,22 +48,45 @@ export default function ScreeningHistoryPage() {
                 const jobs = await jobsApi.getJobs();
 
                 if (!Array.isArray(jobs)) {
-                    console.error('ScreeningHistoryPage: Received non-array data from getJobs:', jobs);
                     setHistory([]);
                     return;
                 }
 
-                const mapped = jobs.map((job) => ({
-                    id: job._id,
-                    role: job.title,
-                    date: job.updatedAt || job.createdAt,
-                    candidates: Math.floor(Math.random() * 20), // Placeholder
-                    avgScore: 85, // Placeholder
-                    topMatch: 'Top Talent',
-                    status: 'Completed',
-                    matchQuality: 'High'
+                // Fetch details for each job
+                const extendedHistory = await Promise.all(jobs.map(async (job) => {
+                    const profilesRes = await profilesApi.getProfiles({ jobId: job._id, limit: 100 });
+                    const scores = profilesRes.data.map((p: any) => p.matchScore || 0).filter((s: number) => s > 0);
+                    const avgScore = scores.length > 0 ? Math.round(scores.reduce((a: number, b: number) => a + b, 0) / scores.length) : 0;
+
+                    // Find top candidate
+                    const topCandidate = profilesRes.data.length > 0
+                        ? profilesRes.data.reduce((prev: any, curr: any) => ((prev.matchScore || 0) > (curr.matchScore || 0)) ? prev : curr)
+                        : null;
+
+                    return {
+                        id: job._id,
+                        role: job.title,
+                        date: job.updatedAt || job.createdAt,
+                        candidates: profilesRes.total || 0,
+                        avgScore: avgScore,
+                        topMatch: topCandidate ? `${topCandidate.firstName} ${topCandidate.lastName}` : 'No Match',
+                        status: job.status === 'closed' ? 'Archived' : 'Completed',
+                        matchQuality: avgScore >= 80 ? 'High' : avgScore >= 60 ? 'Medium' : 'Low'
+                    };
                 }));
-                setHistory(mapped);
+
+                setHistory(extendedHistory);
+
+                const totalCands = extendedHistory.reduce((acc, curr) => acc + curr.candidates, 0);
+                const totalAvgScore = extendedHistory.reduce((acc, curr) => acc + curr.avgScore, 0);
+
+                setStats({
+                    totalAssessments: jobs.length,
+                    avgMatchQuality: jobs.length > 0 ? Math.round(totalAvgScore / jobs.length) : 0,
+                    avgCandidates: jobs.length > 0 ? Number((totalCands / jobs.length).toFixed(1)) : 0,
+                    efficiency: 94
+                });
+
             } catch (error: unknown) {
                 const msg = error instanceof Error ? error.message : 'Failed to load history';
                 console.error('ScreeningHistoryPage: Failed to fetch history:', msg);
@@ -68,7 +98,7 @@ export default function ScreeningHistoryPage() {
         fetchHistory();
     }, []);
 
-    const filteredHistory = history.filter(item =>
+    const filteredHistory = history.filter((item: HistoryEntry) =>
         item.role.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -78,7 +108,7 @@ export default function ScreeningHistoryPage() {
 
             <div className="flex-1 p-8 space-y-10 max-w-7xl mx-auto w-full">
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-4 border-b border-cream/10 pb-12">
                     <div className="space-y-1">
                         <h1 className="text-4xl md:text-5xl font-black text-cream leading-none">
                             Screening <span className="text-cream/40 italic serif">history</span>
@@ -101,10 +131,10 @@ export default function ScreeningHistoryPage() {
                 {/* Global Summary Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                        { label: 'Total Assessments', value: '142', icon: History, trend: '+12%', sub: 'since last month' },
-                        { label: 'Avg. Match Quality', value: '86%', icon: Trophy, trend: 'Stable', sub: 'overall quality' },
-                        { label: 'Avg. Candidates / Role', value: '18.4', icon: CheckCircle2, trend: '+4.2', sub: 'pipeline volume' },
-                        { label: 'Screening Efficiency', value: '94%', icon: BarChart3, trend: '+5%', sub: 'automation rate' },
+                        { label: 'Total Assessments', value: stats.totalAssessments.toString(), icon: History, trend: '+12%', sub: 'since last month' },
+                        { label: 'Avg. Match Quality', value: `${stats.avgMatchQuality}%`, icon: Trophy, trend: 'Stable', sub: 'overall quality' },
+                        { label: 'Avg. Candidates / Role', value: stats.avgCandidates.toString(), icon: CheckCircle2, trend: '+4.2', sub: 'pipeline volume' },
+                        { label: 'Screening Efficiency', value: `${stats.efficiency}%`, icon: BarChart3, trend: '+5%', sub: 'automation rate' },
                     ].map((metric, i) => (
                         <Card key={i} className="p-6 border-cream/10 bg-dark/40 hover:border-cream/30 transition-all group relative overflow-hidden">
                             <div className="flex justify-between items-start mb-4 relative z-10">
@@ -178,14 +208,23 @@ export default function ScreeningHistoryPage() {
                             </thead>
                             <tbody className="divide-y divide-cream/5">
                                 {loading ? (
-                                    <tr>
-                                        <td colSpan={8} className="px-6 py-20 text-center">
-                                            <div className="flex flex-col items-center gap-4 opacity-40">
-                                                <div className="w-10 h-10 border-2 border-cream border-t-transparent rounded-full animate-spin"></div>
-                                                <p className="text-sm font-bold">Fetching history...</p>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    [1, 2, 3, 4, 5].map((i) => (
+                                        <tr key={i} className="animate-pulse hover:bg-cream/5 transition-all text-sm font-medium">
+                                            <td className="px-6 py-5"><div className="h-4 w-16 bg-cream/5 rounded" /></td>
+                                            <td className="px-6 py-5">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-md bg-cream/5 border border-cream/10 shrink-0" />
+                                                    <div className="h-4 w-32 bg-cream/5 rounded" />
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-5"><div className="h-4 w-20 bg-cream/5 rounded mx-auto" /></td>
+                                            <td className="px-6 py-5"><div className="h-6 w-12 bg-cream/5 rounded mx-auto" /></td>
+                                            <td className="px-6 py-5"><div className="h-6 w-16 bg-cream/5 rounded mx-auto" /></td>
+                                            <td className="px-6 py-5"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-cream/5" /><div className="h-4 w-24 bg-cream/5 rounded" /></div></td>
+                                            <td className="px-6 py-5"><div className="h-5 w-20 bg-cream/5 rounded-md" /></td>
+                                            <td className="px-6 py-5 text-right"><div className="h-6 w-6 bg-cream/5 rounded ml-auto" /></td>
+                                        </tr>
+                                    ))
                                 ) : filteredHistory.length > 0 ? filteredHistory.map((item) => (
                                     <tr key={item.id} className="group hover:bg-cream/5 transition-all text-sm font-medium animate-in fade-in duration-500">
                                         <td className="px-6 py-5">

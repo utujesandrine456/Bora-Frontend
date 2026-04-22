@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText,
   Workflow,
@@ -95,79 +94,48 @@ function ScreeningLoadingContent() {
                   fill="none"
                 />
                 {/* Progress Circle */}
-                <motion.circle
+                <circle
                   cx="50"
                   cy="50"
                   r="48"
-                  className="stroke-cream/40"
+                  className="stroke-cream/40 transition-all duration-500 ease-linear"
                   strokeWidth="1"
                   fill="none"
                   strokeDasharray="301.59"
-                  animate={{ strokeDashoffset: 301.59 - (301.59 * progress) / 100 }}
-                  transition={{ duration: 0.5, ease: "linear" }}
+                  strokeDashoffset={301.59 - (301.59 * progress) / 100}
                 />
                 {/* Orbit Particle */}
-                <motion.circle
-                  cx="50"
-                  cy="2"
+                <circle
+                  cx={50 + 48 * Math.sin((progress / 100) * 2 * Math.PI)}
+                  cy={50 - 48 * Math.cos((progress / 100) * 2 * Math.PI)}
                   r="1.5"
-                  className="fill-cream shadow-[0_0_8px_rgba(218,197,167,0.8)]"
-                  animate={{
-                    cx: 50 + 48 * Math.sin((progress / 100) * 2 * Math.PI),
-                    cy: 50 - 48 * Math.cos((progress / 100) * 2 * Math.PI),
-                  }}
-                  transition={{ duration: 0.5, ease: "linear" }}
+                  className="fill-cream shadow-[0_0_8px_rgba(218,197,167,0.8)] transition-all duration-500 ease-linear"
                 />
               </svg>
             </div>
 
-            <motion.div
-              className="absolute inset-[-20px] border border-cream/10 rounded-full"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-            />
-            <motion.div
-              className="absolute inset-[-10px] border border-cream/20 rounded-full border-t-cream/60"
-              animate={{ rotate: -360 }}
-              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-            />
+            <div className="absolute inset-[-20px] border border-cream/10 rounded-full animate-spin [animation-duration:10s]" />
+            <div className="absolute inset-[-10px] border border-cream/20 rounded-full border-t-cream/60 animate-spin [animation-duration:15s] [animation-direction:reverse]" />
 
             <div className="relative w-32 h-32 rounded-full p-1 bg-linear-to-b from-cream/30 to-transparent shadow-2xl overflow-hidden backdrop-blur-md">
               <div className="w-full h-full bg-dark rounded-full flex items-center justify-center overflow-hidden border border-cream/20">
-                <motion.img
+                <img
                   src="/logo.png"
                   alt="BORA Logo"
-                  className="w-20 h-20 object-contain"
-                  animate={{
-                    scale: [1, 1.05, 1],
-                    opacity: [0.8, 1, 0.8]
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
+                  className="w-20 h-20 object-contain animate-pulse"
                 />
               </div>
             </div>
 
-            <motion.div
-              className="absolute -right-2 -bottom-2 w-8 h-8 rounded-full bg-cream flex items-center justify-center shadow-lg shadow-cream/20"
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
+            <div className="absolute -right-2 -bottom-2 w-8 h-8 rounded-full bg-cream flex items-center justify-center shadow-lg shadow-cream/20 animate-bounce">
               <Zap className="w-4 h-4 text-dark" fill="currentColor" />
-            </motion.div>
+            </div>
           </div>
 
           <div className="text-center mb-12 space-y-4">
-            <motion.h1
-              className="text-4xl md:text-5xl font-black text-cream leading-none"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
+            <h1 className="text-4xl md:text-5xl font-black text-cream leading-none">
               AI <span className="text-cream/40 italic serif">Brain</span> Analysis
-            </motion.h1>
+            </h1>
           </div>
 
           {/* Progress Section */}
@@ -178,18 +146,10 @@ function ScreeningLoadingContent() {
             <div className="space-y-8 relative z-10">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={currentStep}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 10 }}
-                      className="flex items-center gap-3"
-                    >
-                      {React.createElement(STEPS[currentStep].icon, { className: "w-5 h-5 text-cream" })}
-                      <span className="text-lg font-semibold text-cream">{STEPS[currentStep].name}</span>
-                    </motion.div>
-                  </AnimatePresence>
+                  <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2 duration-500">
+                    {React.createElement(STEPS[currentStep].icon, { className: "w-5 h-5 text-cream" })}
+                    <span className="text-lg font-semibold text-cream">{STEPS[currentStep].name}</span>
+                  </div>
                 </div>
                 <div className="text-right">
                   <span className="text-2xl font-black text-cream">{Math.round(progress)}%</span>
@@ -197,9 +157,9 @@ function ScreeningLoadingContent() {
               </div>
 
               <div className="h-1.5 w-full bg-cream/5 rounded-full overflow-hidden border border-cream/10 p-[2px]">
-                <motion.div
-                  className="h-full bg-cream rounded-full shadow-[0_0_15px_rgba(218,197,167,0.5)]"
-                  animate={{ width: `${progress}%` }}
+                <div
+                  className="h-full bg-cream rounded-full shadow-[0_0_15px_rgba(218,197,167,0.5)] transition-all duration-500"
+                  style={{ width: `${progress}%` }}
                 />
               </div>
 
@@ -215,7 +175,6 @@ function ScreeningLoadingContent() {
             </div>
           </Card>
 
-          {/* Status Message */}
           <div className="mt-12 flex items-center gap-6">
             <div className="flex items-center gap-2 text-[14px] font-semibold text-emerald-500 bg-emerald-500/5 border border-emerald-500/20 px-3 py-2 rounded-md">
               <ShieldCheck className="w-3 h-3" />
@@ -227,6 +186,7 @@ function ScreeningLoadingContent() {
     </div>
   );
 }
+
 
 export default function ScreeningLoadingPage() {
   return (

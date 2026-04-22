@@ -9,26 +9,19 @@ export const authApi = {
 
   login: async (data: LoginRequest): Promise<LoginResponse> => {
     const response = await apiClient.post<LoginResponse>('/v1/auth/login', data);
-    const raw = response.data as Record<string, unknown>;
+    const raw = response.data as any;
 
     console.log('[authApi.login] Raw response data:', raw);
 
-    // Extract token from any common backend shape:
-    //   { token }  |  { accessToken }  |  { access_token }
-    //   { data: { token } }  |  { data: { accessToken } }
-    const nested = (raw?.data ?? {}) as Record<string, unknown>;
-    const token =
-      (raw?.token as string) ||
-      (raw?.accessToken as string) ||
-      (raw?.access_token as string) ||
-      (nested?.token as string) ||
-      (nested?.accessToken as string) ||
-      (nested?.access_token as string) ||
-      null;
+    let token = raw.token || raw.accessToken || raw.access_token;
 
-    if (!token || typeof token !== 'string') {
-      console.error('[authApi.login] Token not found or not a string in response. Full response:', raw);
-      throw new Error('Login succeeded but no auth token was returned. Please contact support.');
+    if (token && typeof token === 'object' && token.accessToken) {
+      token = token.accessToken;
+    }
+
+    if (!token) {
+      console.warn('[authApi.login] No token found in response');
+      return response.data;
     }
 
     const cleanToken = token.trim().replace(/^["']|["']$/g, ''); // strip accidental quotes
@@ -37,7 +30,7 @@ export const authApi = {
       localStorage.setItem('token', cleanToken);
 
       // Store user info from wherever the backend puts it
-      const user = raw?.user ?? nested?.user;
+      const user = raw?.user;
       if (user) {
         localStorage.setItem('user', JSON.stringify(user));
       }
@@ -60,5 +53,10 @@ export const authApi = {
         window.location.href = '/auth/login';
       }
     }
+  },
+
+  getMe: async (): Promise<any> => {
+    const response = await apiClient.get('/v1/auth/me');
+    return response.data;
   }
 };

@@ -3,131 +3,99 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { Home, ArrowLeft, Ghost } from 'lucide-react';
 
 export default function NotFound() {
-    const patternSvg = `data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 30-30 30L0 30z' fill='none' stroke='%23DAC5A7' stroke-opacity='0.4' stroke-width='1'/%3E%3Cpath d='M30 60L0 30' fill='none' stroke='%23DAC5A7' stroke-opacity='0.4' stroke-width='1'/%3E%3C/svg%3E`;
-
     return (
-        <div className="relative min-h-screen bg-dark text-cream flex flex-col items-center justify-center px-6 overflow-hidden">
+        <div className="min-h-screen bg-dark text-cream flex flex-col items-center justify-center p-6 text-center relative overflow-hidden selection:bg-cream selection:text-dark">
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <motion.div
+                    animate={{
+                        scale: [1, 1.2, 1],
+                        rotate: [0, 90, 180, 270, 360],
+                        opacity: [0.05, 0.1, 0.05]
+                    }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    className="absolute -top-1/4 -left-1/4 w-full h-full border border-cream/5 rounded-full"
+                />
+                <motion.div
+                    animate={{
+                        scale: [1, 1.3, 1],
+                        rotate: [360, 270, 180, 90, 0],
+                        opacity: [0.03, 0.08, 0.03]
+                    }}
+                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                    className="absolute -bottom-1/4 -right-1/4 w-full h-full border border-cream/5 rounded-[40%]"
+                />
+            </div>
 
-            {/* Diamond-lattice pattern */}
-            <div
-                className="fixed inset-0 z-0 pointer-events-none opacity-[0.22]"
-                style={{ backgroundImage: `url("${patternSvg}")`, backgroundSize: '70px' }}
-            />
-
-            {/* Ambient radial glow */}
-            <div
-                className="fixed inset-0 z-0 pointer-events-none"
-                style={{
-                    background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(218,197,167,0.08) 0%, transparent 70%)',
-                }}
-            />
-
-            {/* Corner decorations */}
-            <div className="fixed top-8 left-8 w-8 h-8 border-t-2 border-l-2 border-cream/30 rounded-tl-sm z-10" />
-            <div className="fixed top-8 right-8 w-8 h-8 border-t-2 border-r-2 border-cream/30 rounded-tr-sm z-10" />
-            <div className="fixed bottom-8 left-8 w-8 h-8 border-b-2 border-l-2 border-cream/30 rounded-bl-sm z-10" />
-            <div className="fixed bottom-8 right-8 w-8 h-8 border-b-2 border-r-2 border-cream/30 rounded-br-sm z-10" />
-
-            {/* Logo */}
-            <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-3 z-10"
-            >
-                <div className="w-10 h-10 border border-cream/20 rounded-full flex items-center justify-center overflow-hidden grayscale opacity-40">
-                    <img src="/logo.png" alt="BORA Logo" className="w-full h-full object-cover" />
-                </div>
-                <span className="text-xl font-black text-cream/60">Bora</span>
-            </motion.div>
-
-            {/* Main content */}
-            <div className="relative z-10 flex flex-col items-center text-center max-w-2xl">
-
-                {/* 404 glitch number */}
+            {/* Content Container */}
+            <div className="relative z-10 max-w-2xl w-full">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.7, ease: 'easeOut' }}
-                    className="relative mb-4 select-none"
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="mb-12 relative inline-block text-cream"
                 >
-                    {/* Shadow layer for glitch effect */}
-                    <motion.span
-                        animate={{ x: [0, -3, 3, -2, 0], opacity: [1, 0.8, 0.9, 0.7, 1] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', repeatDelay: 2 }}
-                        className="absolute inset-0 text-[10rem] md:text-[14rem] font-black leading-none text-cream/10 blur-sm pointer-events-none"
-                        aria-hidden="true"
+                    <Ghost className="w-24 h-24 mx-auto mb-8 opacity-20" strokeWidth={1} />
+
+                    <motion.h1
+                        animate={{
+                            textShadow: [
+                                "0px 0px 0px rgba(218,197,167,0)",
+                                "10px 0px 20px rgba(218,197,167,0.3)",
+                                "0px 0px 0px rgba(218,197,167,0)"
+                            ]
+                        }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="text-[12rem] md:text-[18rem] font-black leading-none mb-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-5 italic serif select-none"
                     >
                         404
-                    </motion.span>
-                    <span className="relative text-[10rem] md:text-[14rem] font-black leading-none text-cream">
-                        404
-                    </span>
+                    </motion.h1>
+
+                    <h1 className="text-8xl md:text-9xl font-black mb-2 relative z-10">
+                        Lost?
+                    </h1>
                 </motion.div>
 
-                {/* Divider line */}
-                <motion.div
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ duration: 0.8, delay: 0.3 }}
-                    className="w-full h-px bg-cream/20 mb-10 origin-left"
-                />
-
-                {/* Headline */}
-                <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: 0.4 }}
-                    className="text-3xl md:text-5xl font-black text-cream mb-4"
-                >
-                    Page not found
-                </motion.h1>
-
-                {/* Sub text */}
-                <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: 0.5 }}
-                    className="text-cream/50 text-lg font-medium leading-relaxed mb-12 max-w-md"
-                >
-                    The page you&apos;re looking for doesn&apos;t exist or has been moved.
-                    Let&apos;s get you back on track.
-                </motion.p>
-
-                {/* CTA */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: 0.6 }}
-                    className="flex flex-col sm:flex-row gap-4"
+                    transition={{ delay: 0.4, duration: 0.6 }}
+                    className="space-y-6"
+                >
+                    <h2 className="text-2xl md:text-3xl font-black italic serif text-cream/80">
+                        This coordinate does not exist.
+                    </h2>
+                    <p className="text-cream/40 font-medium text-lg max-w-md mx-auto leading-relaxed">
+                        The resource you are looking for has been moved, deleted, or simply vanished into the recruitment void.
+                    </p>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8, duration: 0.6 }}
+                    className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-6"
                 >
                     <Link
                         href="/"
-                        className="inline-flex items-center justify-center gap-3 bg-cream text-dark px-8 py-4 rounded-md font-semibold hover:bg-white transition-all duration-300 shadow-xl shadow-cream/10"
+                        className="group relative flex items-center gap-3 bg-cream text-dark px-10 py-5 rounded-md font-black hover:bg-white transition-all transform hover:-translate-y-1 active:translate-y-0 shadow-[0_10px_30px_-10px_rgba(218,197,167,0.5)]"
                     >
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Home
+                        <Home className="w-5 h-5" />
+                        <span>Back to Home</span>
                     </Link>
+
+                    <button
+                        onClick={() => window.history.back()}
+                        className="group flex items-center gap-3 bg-transparent border border-cream/20 text-cream/60 px-10 py-5 rounded-md font-black hover:border-cream hover:text-cream transition-all"
+                    >
+                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-2 transition-transform" />
+                        <span>Go Back</span>
+                    </button>
                 </motion.div>
-
             </div>
-
-            {/* Floating decorative orb */}
-            <motion.div
-                animate={{ y: [0, -18, 0], opacity: [0.06, 0.12, 0.06] }}
-                transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-                className="fixed bottom-24 right-24 w-64 h-64 rounded-full pointer-events-none z-0"
-                style={{ background: 'radial-gradient(circle, rgba(218,197,167,0.15) 0%, transparent 70%)' }}
-            />
-            <motion.div
-                animate={{ y: [0, 14, 0], opacity: [0.04, 0.09, 0.04] }}
-                transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-                className="fixed top-32 left-16 w-48 h-48 rounded-full pointer-events-none z-0"
-                style={{ background: 'radial-gradient(circle, rgba(218,197,167,0.12) 0%, transparent 70%)' }}
-            />
         </div>
     );
 }

@@ -31,12 +31,7 @@ const adminMenuItems: MenuItem[] = [
   { name: 'Settings', icon: Settings, href: '/settings' },
 ];
 
-const candidateMenuItems: MenuItem[] = [
-  { name: 'Dashboard', icon: LayoutDashboard, href: '/candidate/dashboard' },
-  { name: 'Jobs', icon: Briefcase, href: '/candidate/jobs' },
-  { name: 'Screening Results', icon: ClipboardCheck, href: '/candidate/results' },
-  { name: 'Settings', icon: Settings, href: '/candidate/settings' },
-];
+
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -62,8 +57,7 @@ export default function Sidebar() {
   };
 
   const appRoutes = [
-    '/dashboard', '/jobs', '/applicants', '/screening', '/insights', '/settings', '/screening-history', '/notifications',
-    '/candidate/dashboard', '/candidate/jobs', '/candidate/results', '/candidate/settings'
+    '/dashboard', '/jobs', '/applicants', '/screening', '/insights', '/settings', '/screening-history', '/notifications'
   ];
   const isAppRoute = appRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
 
@@ -75,16 +69,14 @@ export default function Sidebar() {
       if (!token && isAppRoute) {
         router.push('/auth/login');
       } else if (token && isAuthPage) {
-        router.push(role === 'candidate' ? '/candidate/dashboard' : '/dashboard');
+        router.push('/dashboard');
       }
     }
   }, [isAppRoute, pathname, router, role]);
 
   if (!isAppRoute) return null;
 
-  // Determine menu items based on current portal path for immediate UI update
-  const isCandidatePortal = pathname.startsWith('/candidate');
-  const menuItems = isCandidatePortal ? candidateMenuItems : adminMenuItems;
+  const menuItems = adminMenuItems;
 
   return (
     <div className="w-[280px] min-h-screen h-full bg-dark flex flex-col p-6 border-r border-cream/20 sticky top-0">
@@ -101,8 +93,8 @@ export default function Sidebar() {
         {menuItems.map((item) => {
           const isActive =
             pathname === item.href ||
-            (item.name === 'Jobs' && (pathname === '/' || pathname === '/candidate/jobs')) ||
-            (item.name === 'Screening Results' && (pathname === '/screening' || pathname.startsWith('/screening/results') || pathname === '/candidate/results'));
+            (item.name === 'Jobs' && (pathname === '/' || pathname === '/jobs')) ||
+            (item.name === 'Screening Results' && (pathname === '/screening' || pathname.startsWith('/screening/results')));
           const Icon = item.icon;
 
           return (

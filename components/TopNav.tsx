@@ -8,21 +8,19 @@ export default function TopNav() {
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch (_e) {
-          // ignore
-        }
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (_e) {
+        // ignore
       }
     }
   }, []);
 
   const initials = user?.name
-    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-    : 'SC';
+    ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+    : '??';
 
   return (
     <>
@@ -46,8 +44,8 @@ export default function TopNav() {
 
           <div className="flex items-center gap-6 pl-8 border-l border-cream/10">
             <div className="flex flex-col items-end">
-              <span className="text-sm font-semibold text-cream ">{user?.name || 'Sarah Chen'}</span>
-              <span className="text-[12px] text-cream/40 font-medium">{user?.role || 'Lead Recruiter'}</span>
+              <span className="text-sm font-semibold text-cream ">{user?.name || (user ? 'Authenticating...' : 'Loading...')}</span>
+              <span className="text-[12px] text-cream/40 font-medium">{user?.role || 'User'}</span>
             </div>
             <div className="flex items-center gap-2 cursor-pointer group">
               <div className="w-12 h-12 bg-cream flex items-center justify-center rounded-md overflow-hidden border border-cream/20 shadow-2xl group-hover:scale-105 transition-transform">
