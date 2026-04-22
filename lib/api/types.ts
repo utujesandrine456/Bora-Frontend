@@ -14,6 +14,8 @@ export interface RegisterResponse {
     name: string;
     email: string;
     role: string;
+    photo?: string;
+    company?: string;
   };
 }
 
@@ -29,6 +31,8 @@ export interface LoginResponse {
     name: string;
     email: string;
     role: string;
+    photo?: string;
+    company?: string;
   };
 }
 
@@ -37,6 +41,7 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  photo?: string;
   company?: string;
   createdAt: string;
 }
@@ -73,6 +78,7 @@ export interface BulkProfileInput {
 }
 
 export interface ScreeningResult {
+  _id?: string;
   jobId: string;
   profileId: string;
   score: number;
@@ -82,4 +88,15 @@ export interface ScreeningResult {
   educationScore?: number;
   version: number;
   createdAt: string;
+}
+
+export interface Notification {
+  _id: string;
+  userId: string;
+  type: 'application' | 'message' | 'system' | 'job' | 'screening';
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
