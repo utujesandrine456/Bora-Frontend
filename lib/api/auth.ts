@@ -12,11 +12,11 @@ export const authApi = {
     console.log('authApi.login response data:', response.data);
 
     type RawLoginData = { token?: string; accessToken?: string; access_token?: string };
-    const raw = response.data as unknown as RawLoginData;
+    const raw = response.data as any;
     let token = raw.token || raw.accessToken || raw.access_token;
 
-    if (token && typeof token === 'object' && token.accessToken) {
-      token = token.accessToken;
+    if (token && typeof token === 'object' && (token as any).accessToken) {
+      token = (token as any).accessToken;
     }
 
     if (typeof token === 'string' && typeof window !== 'undefined') {
@@ -46,5 +46,10 @@ export const authApi = {
         window.location.href = '/auth/login';
       }
     }
+  },
+
+  getMe: async (): Promise<any> => {
+    const response = await apiClient.get('/v1/auth/me');
+    return response.data;
   }
 };

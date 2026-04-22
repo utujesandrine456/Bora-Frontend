@@ -77,7 +77,6 @@ export default function ScreeningHistoryPage() {
 
                 setHistory(extendedHistory);
 
-                // Calculate Global Stats
                 const totalCands = extendedHistory.reduce((acc, curr) => acc + curr.candidates, 0);
                 const totalAvgScore = extendedHistory.reduce((acc, curr) => acc + curr.avgScore, 0);
 
@@ -85,7 +84,7 @@ export default function ScreeningHistoryPage() {
                     totalAssessments: jobs.length,
                     avgMatchQuality: jobs.length > 0 ? Math.round(totalAvgScore / jobs.length) : 0,
                     avgCandidates: jobs.length > 0 ? Number((totalCands / jobs.length).toFixed(1)) : 0,
-                    efficiency: 94 // Keep efficiency as a nominal metric for now or calculate based on time reclaimed
+                    efficiency: 94
                 });
 
             } catch (error: unknown) {

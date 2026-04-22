@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/Input';
 import { authApi } from '@/lib/api/auth';
 import toast from 'react-hot-toast';
 
+import { motion } from 'framer-motion';
+
 export default function SignupPage() {
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
@@ -50,12 +52,20 @@ export default function SignupPage() {
     const patternSvg = `data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 30-30 30L0 30z' fill='none' stroke='%23DAC5A7' stroke-opacity='0.4' stroke-width='1'/%3E%3Cpath d='M30 60L0 30' fill='none' stroke='%23DAC5A7' stroke-opacity='0.4' stroke-width='1'/%3E%3C/svg%3E`;
 
     return (
-        <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-dark relative">
-            <div
-                className="fixed inset-0 z-0 pointer-events-none opacity-[0.22]"
+        <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-dark relative overflow-hidden">
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.22 }}
+                transition={{ duration: 1.5 }}
+                className="fixed inset-0 z-0 pointer-events-none"
                 style={{ backgroundImage: `url("${patternSvg}")`, backgroundSize: '70px' }}
             />
-            <div className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden bg-linear-to-br from-cream/10 via-dark to-dark">
+            <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden bg-linear-to-br from-cream/10 via-dark to-dark border-r border-cream/5"
+            >
                 <div className="relative z-10">
                     <Link href="/" className="inline-flex items-center gap-3 group">
                         <div className="w-10 h-10 border-2 border-cream bg-dark rounded-full flex items-center justify-center transition-transform hover:rotate-12 duration-500 overflow-hidden">
@@ -69,36 +79,55 @@ export default function SignupPage() {
 
                 <div className="relative z-10 space-y-12">
                     <div className="space-y-6">
-                        <h1 className="text-5xl xl:text-6xl font-bold text-cream leading-tight">
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3, duration: 0.8 }}
+                            className="text-5xl xl:text-6xl font-bold text-cream leading-tight"
+                        >
                             Unlock your <br />
                             <span className="text-transparent bg-clip-text bg-linear-to-r from-cream to-cream/40 italic font-serif">true potential</span>
-                        </h1>
-                        <p className="text-xl text-cream/70 max-w-xl leading-relaxed">
+                        </motion.h1>
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5, duration: 0.8 }}
+                            className="text-xl text-cream/70 max-w-xl leading-relaxed"
+                        >
                             Join the elite network of talent screened by the world&apos;s most advanced AI recruitment platform.
                             Get matched with roles that truly fit your expertise.
-                        </p>
+                        </motion.p>
                     </div>
 
                     <div className="space-y-5">
-                        <div className="flex items-center gap-4 text-cream/80">
-                            <div className="w-2 h-2 rounded-full bg-cream shadow-[0_0_10px_rgba(218,197,167,0.5)]"></div>
-                            <span className="text-lg font-medium">AI-powered insights</span>
-                        </div>
-                        <div className="flex items-center gap-4 text-cream/80">
-                            <div className="w-2 h-2 rounded-full bg-cream shadow-[0_0_10px_rgba(218,197,167,0.5)]"></div>
-                            <span className="text-lg font-medium">Verified talent network</span>
-                        </div>
-                        <div className="flex items-center gap-4 text-cream/80">
-                            <div className="w-2 h-2 rounded-full bg-cream shadow-[0_0_10px_rgba(218,197,167,0.5)]"></div>
-                            <span className="text-lg font-medium">Rapid application process</span>
-                        </div>
+                        {[
+                            "AI-powered insights",
+                            "Verified talent network",
+                            "Rapid application process"
+                        ].map((item, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.7 + (i * 0.1) }}
+                                className="flex items-center gap-4 text-cream/80"
+                            >
+                                <div className="w-2 h-2 rounded-full bg-cream shadow-[0_0_10px_rgba(218,197,167,0.5)]"></div>
+                                <span className="text-lg font-medium">{item}</span>
+                            </motion.div>
+                        ))}
                     </div>
                 </div>
-            </div>
+            </motion.div>
 
             {/* Right side form */}
             <div className="flex items-center justify-center p-8 lg:p-12 bg-dark">
-                <div className="w-full max-w-lg">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-full max-w-lg"
+                >
                     <div className="lg:hidden text-center mb-10">
                         <Link href="/" className="inline-flex items-center gap-3 group">
                             <div className="w-10 h-10 border border-cream bg-dark rounded-full flex items-center justify-center overflow-hidden">
@@ -109,11 +138,26 @@ export default function SignupPage() {
                     </div>
 
                     <div className="mb-12">
-                        <h2 className="text-3xl font-bold text-cream">Apply for talent network</h2>
-                        <p className="text-cream/50 mt-2 font-medium">Create your profile and let our AI find the best opportunities for you.</p>
+                        <motion.h2
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="text-3xl font-bold text-cream"
+                        >Apply for talent network</motion.h2>
+                        <motion.p
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-cream/50 mt-2 font-medium"
+                        >Create your profile and let our AI find the best opportunities for you.</motion.p>
                     </div>
 
-                    <div className="bg-cream/5 border border-cream/10 p-10 rounded-2xl space-y-8">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                        className="bg-cream/5 border border-cream/10 p-10 rounded-2xl space-y-8"
+                    >
                         <form className="space-y-6" onSubmit={handleSubmit}>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-cream/60 ml-1">Full name</label>
@@ -121,7 +165,7 @@ export default function SignupPage() {
                                     placeholder="Enter your full name"
                                     value={formData.name}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, name: e.target.value })}
-                                    className="bg-cream/5 border-cream/20 h-14 rounded-xl text-cream focus:border-cream/50 transition-all font-medium"
+                                    className="bg-cream/5 border-cream/20 h-14 rounded-xl text-cream focus:border-cream/50 transition-all font-medium placeholder:text-cream/20"
                                 />
                             </div>
 
@@ -132,7 +176,7 @@ export default function SignupPage() {
                                     placeholder="name@company.com"
                                     value={formData.email}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, email: e.target.value })}
-                                    className="bg-cream/5 border-cream/20 h-14 rounded-xl text-cream focus:border-cream/50 transition-all font-medium"
+                                    className="bg-cream/5 border-cream/20 h-14 rounded-xl text-cream focus:border-cream/50 transition-all font-medium placeholder:text-cream/20"
                                 />
                             </div>
 
@@ -143,7 +187,7 @@ export default function SignupPage() {
                                     placeholder="••••••••"
                                     value={formData.password}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, password: e.target.value })}
-                                    className="text-md bg-cream/5 border-cream/20 h-14 rounded-xl text-cream focus:border-cream/50 transition-all font-medium pr-12"
+                                    className="text-md bg-cream/5 border-cream/20 h-14 rounded-xl text-cream focus:border-cream/50 transition-all font-medium pr-12 placeholder:text-cream/20"
                                 />
                                 <button
                                     type="button"
@@ -171,8 +215,8 @@ export default function SignupPage() {
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full h-14 bg-cream text-dark hover:bg-white font-bold text-lg rounded-xl transition-all shadow-xl shadow-cream/10 disabled:opacity-50 disabled:cursor-not-allowed">
-                                {loading ? 'Applying...' : <>Apply now <ArrowRight className="ml-2 w-5 h-5" /></>}
+                                className="w-full h-14 bg-cream text-dark hover:bg-white font-bold text-lg rounded-xl transition-all shadow-xl shadow-cream/10 group/btn disabled:opacity-50 disabled:cursor-not-allowed">
+                                {loading ? 'Applying...' : <>Apply now <ArrowRight className="ml-2 w-5 h-5 group-hover/btn:translate-x-1 transition-transform" /></>}
                             </Button>
                         </form>
 
@@ -190,8 +234,8 @@ export default function SignupPage() {
                                 Sign in
                             </Button>
                         </Link>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
             </div>
         </div>
     );

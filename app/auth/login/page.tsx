@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { authApi } from '@/lib/api/auth';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +34,7 @@ export default function LoginPage() {
             });
             console.log('Login successful, token set in localStorage. Redirecting...');
             toast.success('Successfully signed in!');
-            window.location.href = '/jobs'; // Force a hard refresh to ensure Sidebar and API clients pick up the token
+            window.location.href = '/dashboard';
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : 'Invalid credentials';
             toast.error(message);
@@ -46,14 +47,20 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-dark relative overflow-hidden">
-            {/* Background Pattern */}
-            <div
-                className="fixed inset-0 z-0 pointer-events-none opacity-[0.22]"
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.22 }}
+                transition={{ duration: 1.5 }}
+                className="fixed inset-0 z-0 pointer-events-none"
                 style={{ backgroundImage: `url("${patternSvg}")`, backgroundSize: '70px' }}
             />
 
-            {/* Left Side: Hero / Brand */}
-            <div className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden bg-linear-to-br from-cream/10 via-dark to-dark border-r border-cream/5">
+            <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden bg-linear-to-br from-cream/10 via-dark to-dark border-r border-cream/5"
+            >
                 <div className="relative z-10">
                     <Link href="/" className="inline-flex items-center gap-3 group">
                         <div className="w-10 h-10 border-2 border-cream/30 bg-dark rounded-full flex items-center justify-center transition-all group-hover:border-cream group-hover:rotate-12 duration-500 overflow-hidden shadow-2xl shadow-cream/20">
@@ -67,35 +74,55 @@ export default function LoginPage() {
 
                 <div className="relative z-10 space-y-12">
                     <div className="space-y-6">
-                        <h1 className="text-5xl xl:text-6xl font-bold text-cream leading-tight">
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3, duration: 0.8 }}
+                            className="text-5xl xl:text-6xl font-bold text-cream leading-tight"
+                        >
                             Welcome back to the <br />
                             <span className="text-transparent bg-clip-text bg-linear-to-r from-cream to-cream/40 italic font-serif">Elite Network</span>
-                        </h1>
-                        <p className="text-xl text-cream/70 max-w-xl leading-relaxed">
+                        </motion.h1>
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5, duration: 0.8 }}
+                            className="text-xl text-cream/70 max-w-xl leading-relaxed"
+                        >
                             Sign in to manage your talent pipeline, review AI insights, and finalize top matches.
-                        </p>
+                        </motion.p>
                     </div>
 
                     <div className="space-y-6">
-                        <div className="flex items-center gap-4 text-cream/80">
-                            <div className="p-1 rounded-xl bg-cream ">
-                                <span className="w-4 h-4 bg-cream"></span>
-                            </div>
-                            <span className="text-lg font-medium italic">10k+ Verified Talent</span>
-                        </div>
-                        <div className="flex items-center gap-4 text-cream/80">
-                            <div className="p-1 rounded-xl bg-cream ">
-                                <span className="w-4 h-4 bg-cream"></span>
-                            </div>
-                            <span className="text-lg font-medium italic">98% Match Quality</span>
-                        </div>
+                        {[
+                            { label: "10k+ Verified Talent" },
+                            { label: "98% Match Quality" }
+                        ].map((item, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.7 + (i * 0.1) }}
+                                className="flex items-center gap-4 text-cream/80"
+                            >
+                                <div className="p-1 rounded-xl bg-cream ">
+                                    <span className="w-4 h-4 bg-cream"></span>
+                                </div>
+                                <span className="text-lg font-medium italic">{item.label}</span>
+                            </motion.div>
+                        ))}
                     </div>
                 </div>
-            </div>
+            </motion.div>
 
             {/* Right Side: Login Form */}
             <div className="flex items-center justify-center p-8 lg:p-12 bg-dark">
-                <div className="w-full max-w-lg">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-full max-w-lg"
+                >
                     <div className="lg:hidden text-center mb-10">
                         <Link href="/" className="inline-flex items-center gap-3">
                             <div className="w-10 h-10 border border-cream/20 bg-dark rounded-full flex items-center justify-center overflow-hidden">
@@ -106,12 +133,32 @@ export default function LoginPage() {
                     </div>
 
                     <div className="mb-12">
-                        <h2 className="text-3xl font-bold text-cream">Login</h2>
-                        <p className="text-cream/50 mt-2 font-medium">Enter your credentials to access your BORA space.</p>
+                        <motion.h2
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="text-3xl font-bold text-cream"
+                        >
+                            Login
+                        </motion.h2>
+                        <motion.p
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-cream/50 mt-2 font-medium"
+                        >
+                            Enter your credentials to access your BORA space.
+                        </motion.p>
                     </div>
 
-                    <div className="bg-cream/5 border border-cream/10 p-10 rounded-2xl space-y-8">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                        className="bg-cream/5 border border-cream/10 p-10 rounded-2xl space-y-8"
+                    >
                         <form className="space-y-6" onSubmit={handleSubmit}>
+                            {/* Inputs and children could also be staggered, but this is already quite premium */}
                             <div className="space-y-2 group">
                                 <label className="text-sm font-medium text-cream/60 ml-1 group-focus-within:text-cream transition-colors">Email address</label>
                                 <div className="relative">
@@ -129,7 +176,7 @@ export default function LoginPage() {
                             <div className="space-y-2 group relative">
                                 <div className="flex justify-between items-center px-1">
                                     <label className="text-sm font-medium text-cream/60 group-focus-within:text-cream transition-colors">Password</label>
-                                    <Link href="#" className="text-xs font-medium text-cream/40 hover:text-cream transition-colors">Forgot password?</Link>
+                                    <Link href="/auth/forgot-password" title="Forgot Password" className="text-xs font-medium text-cream/40 hover:text-cream transition-colors">Forgot password?</Link>
                                 </div>
                                 <div className="relative">
                                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cream/20 group-focus-within:text-cream/60 transition-colors" />
@@ -183,8 +230,8 @@ export default function LoginPage() {
                                 Create an account
                             </Button>
                         </Link>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
             </div>
         </div>
     );

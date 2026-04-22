@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Zap, ShieldCheck, BrainCircuit, Send, ChevronDown, ChevronUp, UserCheck, Star } from 'lucide-react';
 import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
+import { motion } from 'framer-motion';
 import Header from '@/components/Header';
 import { profilesApi } from '@/lib/api/profiles';
 
@@ -30,7 +31,13 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-dark text-cream font-medium selection:bg-cream selection:text-dark overflow-x-hidden relative">
-      <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.25]" style={{ backgroundImage: `url("${patternSvg}")`, backgroundSize: '70px' }}></div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 2 }}
+        className="fixed inset-0 z-0 pointer-events-none opacity-[0.25]"
+        style={{ backgroundImage: `url("${patternSvg}")`, backgroundSize: '70px' }}
+      />
 
       <Header />
 
@@ -39,24 +46,49 @@ export default function LandingPage() {
           <div className="absolute inset-0 z-0 opacity-40 pointer-events-none bg-linear-to-t from-dark via-transparent to-transparent" />
 
           <div className="max-w-7xl mx-auto w-full relative z-10 grid lg:grid-cols-2 gap-20 items-center text-left">
-            <div className="flex flex-col items-start">
-              <h1 className="text-5xl md:text-7xl lg:text-[4rem] font-black leading-none mb-8 text-cream">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="flex flex-col items-start"
+            >
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.8 }}
+                className="text-5xl md:text-7xl lg:text-[4rem] font-black leading-none mb-8 text-cream"
+              >
                 Where talent <br />
                 <span className="italic font-serif opacity-90">meets true value.</span>
-              </h1>
+              </motion.h1>
 
-              <p className="text-lg md:text-xl text-cream/70 max-w-xl mb-12 leading-relaxed font-medium">
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.8 }}
+                className="text-lg md:text-xl text-cream/70 max-w-xl mb-12 leading-relaxed font-medium"
+              >
                 The premier AI-powered recruitment engine. Screen, rank, and shortlist candidates with uncompromising precision, keeping humans firmly in control.
-              </p>
+              </motion.p>
 
-              <div className="flex flex-col sm:flex-row gap-5">
-                <Link href="/auth/signup" className="bg-cream text-dark px-6 py-4 rounded-md text-md font-semibold hover:bg-white transition-all duration-300 flex items-center justify-center gap-3">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+                className="flex flex-col sm:flex-row gap-5"
+              >
+                <Link href="/auth/signup" className="group bg-cream text-dark px-6 py-4 rounded-md text-md font-semibold hover:bg-white transition-all duration-300 flex items-center justify-center gap-3">
                   Get Started <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
-            <div className="relative group hidden lg:block">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 1, ease: "easeOut" }}
+              className="relative group hidden lg:block"
+            >
               <div className="absolute -inset-1 bg-linear-to-r from-cream/20 to-transparent rounded-lg blur-2xl opacity-30 group-hover:opacity-50 transition duration-1000"></div>
               <div className="relative border border-cream/30 bg-dark p-8 rounded-md shadow-2xl overflow-hidden min-h-[500px] flex flex-col mt-16">
                 <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-cream/40 to-transparent opacity-50"></div>
@@ -119,7 +151,10 @@ export default function LandingPage() {
               </div>
 
               {/* FLOATING DECORATIONS */}
-              <div
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 }}
                 className="absolute top-6 -right-6 p-4 border border-cream/30 bg-dark rounded-md shadow-xl backdrop-blur-md z-20"
               >
                 <div className="flex items-center gap-3">
@@ -131,16 +166,19 @@ export default function LandingPage() {
                     <div className="text-[9px] text-cream/40">AI verified</div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-              <div
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1 }}
                 className="absolute -bottom-10 -left-10 p-5 border border-cream/30 bg-dark rounded-md shadow-2xl backdrop-blur-md z-20 max-w-[180px]"
               >
                 <div className="text-[10px] font-bold text-cream/40 mb-2">Efficiency boost</div>
                 <div className="text-3xl font-black text-cream mb-1">12.5x</div>
                 <div className="text-[14px] text-emerald-500 font-bold">Faster Hiring</div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
 
@@ -153,10 +191,17 @@ export default function LandingPage() {
                 { label: 'System Integrations', value: '10+' },
                 { label: 'Unbiased Output', value: '100%' },
               ].map((stat, i) => (
-                <div key={i} className="text-center px-4">
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="text-center px-4"
+                >
                   <div className="text-4xl md:text-5xl font-black text-cream mb-4">{stat.value}</div>
                   <div className="text-lg text-cream/60 font-semibold">{stat.label}</div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -165,7 +210,12 @@ export default function LandingPage() {
         {/* FEATURES SECTION */}
         <section id="features" className="py-32 px-6 bg-dark">
           <div className="max-w-7xl mx-auto">
-            <div className="mb-24 flex flex-col md:flex-row md:items-end justify-between border-b border-cream/20 pb-12 gap-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="mb-24 flex flex-col md:flex-row md:items-end justify-between border-b border-cream/20 pb-12 gap-6"
+            >
               <div>
                 <h2 className="text-xs font-bold text-cream/60 mb-4">Modern recruitment</h2>
                 <h3 className="text-4xl md:text-6xl font-black text-cream leading-none">Built for<br />precision.</h3>
@@ -173,7 +223,7 @@ export default function LandingPage() {
               <p className="text-cream/70 max-w-sm text-lg md:text-right">
                 BORA automates the heavy lifting of high-volume applicant screening so you can focus on finding the best.
               </p>
-            </div>
+            </motion.div>
 
             <div className="grid md:grid-cols-3 gap-8">
               {[
@@ -181,17 +231,25 @@ export default function LandingPage() {
                 { icon: ShieldCheck, title: "Objective AI", desc: "Score candidates rigorously against explicit job parameters, ignoring bias." },
                 { icon: BrainCircuit, title: "Deep Insights", desc: "Granular explanations for every candidate: strengths, weaknesses, parity." }
               ].map((feature, i) => (
-                <div key={i} className="group border border-cream/20 bg-dark p-10 rounded-md hover:bg-cream/5 transition-all duration-500">
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.2 }}
+                  className="group border border-cream/20 bg-dark p-10 rounded-md hover:bg-cream/5 transition-all duration-500"
+                >
                   <div className="mb-10 w-14 h-14 border border-cream/30 rounded-md flex items-center justify-center text-cream group-hover:scale-110 transition-transform duration-500">
                     <feature.icon className="w-6 h-6" strokeWidth={1.5} />
                   </div>
                   <h4 className="text-xl font-bold text-cream mb-4">{feature.title}</h4>
                   <p className="text-cream/60 text-base leading-relaxed">{feature.desc}</p>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
         </section>
+
 
         <section id="workflow" className="py-32 px-6 relative overflow-hidden">
 
@@ -208,7 +266,14 @@ export default function LandingPage() {
                   { step: '03', title: 'Gemini Evaluation', desc: 'Run multi-dimensional comparisons for alignment.' },
                   { step: '04', title: 'Rank & Shortlist', desc: 'Generate accurate match scores and present the Top 10.' }
                 ].map((item, i) => (
-                  <div key={i} className="flex gap-8 group">
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    className="flex gap-8 group"
+                  >
                     <div className="text-5xl font-black text-cream/20 transition-all duration-300 group-hover:text-cream">
                       {item.step}
                     </div>
@@ -216,7 +281,7 @@ export default function LandingPage() {
                       <h4 className="text-xl font-bold text-cream mb-2">{item.title}</h4>
                       <p className="text-cream/60">{item.desc}</p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
@@ -387,7 +452,12 @@ function FAQItem({ question, answer }: { question: string, answer: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="border border-cream/20 bg-dark rounded-md overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="border border-cream/20 bg-dark rounded-md overflow-hidden"
+    >
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between p-5 text-left font-bold text-cream hover:bg-cream/5 transition-colors focus:outline-none"
@@ -395,13 +465,16 @@ function FAQItem({ question, answer }: { question: string, answer: string }) {
         <span>{question}</span>
         <ChevronDown className={`w-5 h-5 text-cream/50 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
-      {isOpen && (
-        <div className="overflow-hidden">
-          <div className="p-5 pt-0 text-cream/60 text-sm leading-relaxed border-t border-cream/10 border-dashed mx-5">
-            {answer}
-          </div>
+      <motion.div
+        initial={false}
+        animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="overflow-hidden"
+      >
+        <div className="p-5 pt-0 text-cream/60 text-sm leading-relaxed border-t border-cream/10 border-dashed mx-5">
+          {answer}
         </div>
-      )}
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

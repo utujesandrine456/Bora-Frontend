@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -16,8 +17,11 @@ export default function Header() {
     }, []);
 
     return (
-        <nav
-            className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 w-[80%] max-w-7xl h-20 backdrop-blur-xl border rounded-md shadow-2xl transition-all duration-300 overflow-hidden ${isScrolled
+        <motion.nav
+            initial={{ y: -100, x: "-50%", opacity: 0 }}
+            animate={{ y: 0, x: "-50%", opacity: 1 }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className={`fixed top-5 left-1/2 z-50 w-[80%] max-w-7xl h-20 backdrop-blur-xl border rounded-md shadow-2xl transition-all duration-300 overflow-hidden ${isScrolled
                 ? "bg-black/85 border-cream/10"
                 : "bg-black/60 border-cream/20"
                 }`}
@@ -48,6 +52,6 @@ export default function Header() {
                     </Link>
                 </div>
             </div>
-        </nav>
+        </motion.nav>
     );
 }

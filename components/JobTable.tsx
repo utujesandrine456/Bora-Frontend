@@ -29,24 +29,37 @@ export default function JobTable() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const pendingJobIdRef = React.useRef<string | null>(null);
 
-  const handleUploadExcel = async (e: React.ChangeEvent<HTMLInputElement>, jobId: string) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    const jobId = pendingJobIdRef.current;
     if (!file || !jobId) return;
 
     setUploading(jobId);
     const id = toast.loading('Importing candidate pool...');
     try {
-      await uploadsApi.uploadCsv(file);
+      await uploadsApi.uploadCsv(file, jobId);
       toast.success('Applicants imported successfully!', { id });
       fetchJobs();
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'Import failed';
-      toast.error(msg, { id });
+      const axiosError = error as any;
+      const serverMsg = axiosError?.response?.data?.message || axiosError?.response?.data?.error;
+      const msg = serverMsg || (error instanceof Error ? error.message : 'Import failed');
+      toast.error(`Upload failed: ${msg}`, { id });
+      console.error('CSV Upload Error:', axiosError?.response?.data || error);
     } finally {
       setUploading(null);
+      pendingJobIdRef.current = null;
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+
+  const triggerUpload = (jobId: string) => {
+    pendingJobIdRef.current = jobId;
+    // Reset before clicking so change event fires even for same file
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    fileInputRef.current?.click();
   };
 
   const fetchJobs = async () => {
@@ -181,7 +194,7 @@ export default function JobTable() {
       if (sortBy === 'applicants') {
         return ((b.applicants || 0) as number) - ((a.applicants || 0) as number);
       }
-      // Latest first (sorting by createdAt string)
+
       const dateA = new Date(a.createdAt || 0).getTime();
       const dateB = new Date(b.createdAt || 0).getTime();
       return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA);
@@ -192,6 +205,14 @@ export default function JobTable() {
 
   return (
     <div className="bg-dark border border-cream/20 overflow-hidden rounded-md">
+      {/* Single shared hidden file input for all rows */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept=".csv,.xlsx,.xls"
+        onChange={handleFileChange}
+      />
       <div className="p-8 border-b border-cream/20 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex-1 max-w-md relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-cream/60" />
@@ -205,7 +226,6 @@ export default function JobTable() {
         </div>
 
         <div className="flex items-center gap-3 relative">
-          {/* Filters Toggle Button */}
           <div className="relative">
             <Button
               variant="secondary"
@@ -442,21 +462,14 @@ export default function JobTable() {
                               View Details
                             </Button>
                           </Link>
-                          <input
-                            type="file"
-                            ref={fileInputRef}
-                            className="hidden"
-                            accept=".csv,.xlsx,.xls"
-                            onChange={(e) => handleUploadExcel(e, job.id as string)}
-                          />
                           <Button
                             variant="secondary"
                             size="sm"
                             disabled={uploading === job.id}
                             className="bg-dark border-cream/20 font-bold transition-all hover:bg-amber-500/20 hover:text-amber-500 hover:border-amber-500/40"
-                            onClick={() => fileInputRef.current?.click()}
+                            onClick={() => triggerUpload(job.id as string)}
                           >
-                            {uploading === job.id ? 'Importing...' : 'Upload Excel'}
+                            {uploading === job.id ? 'Importing...' : 'Import CSV / Excel'}
                           </Button>
                           <Button variant="primary" size="sm" className="bg-emerald-500 text-dark font-black hover:bg-emerald-400 border-none transition-all" onClick={() => handleScreen(job.id as string)}>
                             Screen Candidates
