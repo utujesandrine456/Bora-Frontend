@@ -8,7 +8,7 @@ export const uploadsApi = {
 
     const response = await apiClient.post(`/v1/upload/csv?jobId=${jobId}`, formData, {
       headers: {
-        'Content-Type': undefined, // Crucial: Let Axios handle the boundary
+        'Content-Type': undefined,
       }
     });
     return response.data;

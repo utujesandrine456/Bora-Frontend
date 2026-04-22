@@ -135,12 +135,27 @@ export default function JobTable() {
 
     setScreeningJob(jobId);
     const id = toast.loading('Initiating AI analysis for all candidates...');
+
+    // 50-second timeout guard to prevent infinite hanging
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Screening request timed out. The analysis may still be processing in the background.')), 50000)
+    );
+
     try {
-      await screeningApi.triggerScreening(jobId);
+      await Promise.race([
+        screeningApi.triggerScreening(jobId),
+        timeoutPromise
+      ]);
+
       toast.success('Analysis complete! Opening ranking dashboard...', { id });
-      router.push(`/screening/results?jobId=${jobId}`);
+
+      // Delay redirection slightly to allow DB state to stabilize
+      setTimeout(() => {
+        router.push(`/screening/results?jobId=${jobId}`);
+      }, 2000);
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Failed to start analysis';
+      console.error('JobTable: Screening failed:', msg);
       toast.error(msg, { id });
     } finally {
       setScreeningJob(null);
