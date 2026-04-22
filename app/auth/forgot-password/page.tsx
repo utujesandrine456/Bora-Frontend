@@ -6,6 +6,7 @@ import { ArrowRight, Mail } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 export default function ForgotPasswordPage() {
     const [loading, setLoading] = useState(false);
@@ -35,13 +36,21 @@ export default function ForgotPasswordPage() {
     return (
         <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-dark relative overflow-hidden">
             {/* Background Pattern */}
-            <div
-                className="fixed inset-0 z-0 pointer-events-none opacity-[0.22]"
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.22 }}
+                transition={{ duration: 1.5 }}
+                className="fixed inset-0 z-0 pointer-events-none"
                 style={{ backgroundImage: `url("${patternSvg}")`, backgroundSize: '70px' }}
             />
 
             {/* Left Side: Hero / Brand */}
-            <div className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden bg-linear-to-br from-cream/10 via-dark to-dark border-r border-cream/5">
+            <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden bg-linear-to-br from-cream/10 via-dark to-dark border-r border-cream/5"
+            >
                 <div className="relative z-10">
                     <Link href="/" className="inline-flex items-center gap-3 group">
                         <div className="w-10 h-10 border-2 border-cream/30 bg-dark rounded-full flex items-center justify-center transition-all group-hover:border-cream group-hover:rotate-12 duration-500 overflow-hidden shadow-2xl shadow-cream/20">
@@ -55,20 +64,35 @@ export default function ForgotPasswordPage() {
 
                 <div className="relative z-10 space-y-12">
                     <div className="space-y-6">
-                        <h1 className="text-5xl xl:text-6xl font-bold text-cream leading-tight">
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3, duration: 0.8 }}
+                            className="text-5xl xl:text-6xl font-bold text-cream leading-tight"
+                        >
                             Regain access to your <br />
                             <span className="text-transparent bg-clip-text bg-linear-to-r from-cream to-cream/40 italic font-serif">Workspace</span>
-                        </h1>
-                        <p className="text-xl text-cream/70 max-w-xl leading-relaxed">
+                        </motion.h1>
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5, duration: 0.8 }}
+                            className="text-xl text-cream/70 max-w-xl leading-relaxed"
+                        >
                             Don&apos;t worry if you forgot your password. We&apos;ll help you get back to your talent pipeline quickly.
-                        </p>
+                        </motion.p>
                     </div>
                 </div>
-            </div>
+            </motion.div>
 
             {/* Right Side: Form */}
             <div className="flex items-center justify-center p-8 lg:p-12 bg-dark">
-                <div className="w-full max-w-lg">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-full max-w-lg"
+                >
                     <div className="lg:hidden text-center mb-10">
                         <Link href="/" className="inline-flex items-center gap-3">
                             <div className="w-10 h-10 border border-cream/20 bg-dark rounded-full flex items-center justify-center overflow-hidden">
@@ -79,11 +103,26 @@ export default function ForgotPasswordPage() {
                     </div>
 
                     <div className="mb-12">
-                        <h2 className="text-3xl font-bold text-cream">Recover Password</h2>
-                        <p className="text-cream/50 mt-2 font-medium">Enter your registered email address to receive password reset instructions.</p>
+                        <motion.h2
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="text-3xl font-bold text-cream"
+                        >Recover Password</motion.h2>
+                        <motion.p
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-cream/50 mt-2 font-medium"
+                        >Enter your registered email address to receive password reset instructions.</motion.p>
                     </div>
 
-                    <div className="bg-cream/5 border border-cream/10 p-10 rounded-2xl space-y-8">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                        className="bg-cream/5 border border-cream/10 p-10 rounded-2xl space-y-8"
+                    >
                         {!submitted ? (
                             <form className="space-y-6" onSubmit={handleSubmit}>
                                 <div className="space-y-2 group">
@@ -108,13 +147,17 @@ export default function ForgotPasswordPage() {
                                 </Button>
                             </form>
                         ) : (
-                            <div className="text-center py-4 space-y-4">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="text-center py-4 space-y-4"
+                            >
                                 <div className="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
                                     <Mail className="w-8 h-8" />
                                 </div>
                                 <h3 className="text-xl font-bold text-cream">Check your inbox</h3>
                                 <p className="text-cream/60 font-medium">We have sent a password recovery link to your email.</p>
-                            </div>
+                            </motion.div>
                         )}
 
                         <div className="relative py-2 mt-8">
@@ -131,8 +174,8 @@ export default function ForgotPasswordPage() {
                                 Back to login
                             </Button>
                         </Link>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
             </div>
         </div>
     );

@@ -10,13 +10,11 @@ import {
   Check,
   X,
   Sparkles,
-  UploadCloud,
-  FileText
+  UploadCloud
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import TopNav from '@/components/TopNav';
-import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import { profilesApi } from '@/lib/api/profiles';
@@ -83,23 +81,6 @@ export default function ApplicantsPage() {
     }
   };
 
-  const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    const id = toast.loading('Uploading CSV talent pool...');
-    try {
-      await uploadsApi.uploadCsv(file);
-      toast.success('Applicants List imported successfully!', { id });
-      fetchApplicants();
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'CSV Import failed';
-      toast.error(message, { id });
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const handleSelectApplicant = (id: string | number, checked: boolean) => {
     setSelectedApplicants(prev =>
@@ -140,34 +121,14 @@ export default function ApplicantsPage() {
                 onChange={handleResumeUpload}
                 disabled={uploading}
               />
-              <Button
-                variant="primary"
-                className="gap-3 py-4 px-8 bg-cream text-dark"
+              <button
+                className="cursor-pointer inline-flex items-center justify-center gap-3 py-4 px-8 bg-cream hover:bg-white text-dark transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none rounded-md font-black text-sm"
                 onClick={() => document.getElementById('resume-upload')?.click()}
                 disabled={uploading}
               >
                 <UploadCloud className={`w-5 h-5 ${uploading ? 'animate-bounce' : ''}`} />
-                <span className="font-black text-sm">{uploading ? 'Processing...' : 'Scan Single Resume'}</span>
-              </Button>
-            </div>
-            <div className="relative">
-              <input
-                type="file"
-                id="csv-upload"
-                className="hidden"
-                accept=".csv,.xlsx,.xls"
-                onChange={handleCsvUpload}
-                disabled={uploading}
-              />
-              <Button
-                variant="secondary"
-                className="gap-3 py-4 px-8 border-cream/20 hover:border-cream/60 group"
-                onClick={() => document.getElementById('csv-upload')?.click()}
-                disabled={uploading}
-              >
-                <FileText className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span className="font-black text-sm">Import (CSV)</span>
-              </Button>
+                <span>{uploading ? 'Processing...' : 'Scan Single Resume'}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -186,15 +147,14 @@ export default function ApplicantsPage() {
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative">
-              <Button
-                variant="secondary"
-                className={`gap-2 py-4 px-6 ${showFilters ? 'bg-cream/50 border-cream/40 text-cream' : 'border-cream/10 text-cream/40'}`}
+              <button
+                className={`cursor-pointer inline-flex items-center justify-center gap-2 py-4 px-6 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none rounded-md font-bold ${showFilters ? 'bg-cream/50 border border-cream/40 text-cream' : 'bg-dark border border-cream/10 text-cream/40 hover:bg-cream/10'}`}
                 onClick={() => setShowFilters(!showFilters)}
               >
                 <Filter className="w-4 h-4" />
-                <span className="font-bold">Advanced Filters</span>
+                <span>Advanced Filters</span>
                 {statusFilter !== 'All' && <span className="w-2 h-2 bg-emerald-500 rounded-full" />}
-              </Button>
+              </button>
 
               {showFilters && (
                 <>
@@ -331,27 +291,24 @@ export default function ApplicantsPage() {
           <div className="flex items-center gap-4">
             {selectedApplicants.length === 1 ? (
               <>
-                <Button
-                  variant="primary"
-                  className="bg-dark text-cream py-3 px-8 text-xs hover:bg-black/90"
+                <button
+                  className="cursor-pointer inline-flex items-center justify-center gap-2 bg-dark text-cream py-3 px-8 text-xs hover:bg-black/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none rounded-md font-semibold"
                 >
                   Trigger Screen
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="bg-dark/5 border border-dark/10 text-dark py-3 px-8 text-xs hover:bg-dark/10"
+                </button>
+                <button
+                  className="cursor-pointer inline-flex items-center justify-center gap-2 bg-dark/5 border border-dark/10 text-dark py-3 px-8 text-xs hover:bg-dark/10 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none rounded-md font-semibold"
                   onClick={() => router.push(`/applicants/${selectedApplicants[0]}`)}
                 >
                   Inspect details
-                </Button>
+                </button>
               </>
             ) : (
-              <Button
-                variant="primary"
-                className="bg-dark text-cream py-4 px-12 text-sm hover:scale-[1.02] shadow-2xl transition-all"
+              <button
+                className="cursor-pointer inline-flex items-center justify-center gap-2 bg-dark text-cream py-4 px-12 text-sm hover:scale-[1.02] shadow-2xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none rounded-md font-black"
               >
                 Screen & Rank (AI)
-              </Button>
+              </button>
             )}
           </div>
 
