@@ -290,7 +290,7 @@ export default function CandidateDetailsPage() {
               </h2>
               <Card className="p-6 space-y-6">
                 <div>
-                  <h3 className="text-[10px] font-bold text-cream/40 tracking-widest mb-3">Primary skills</h3>
+                  <h3 className="text-[10px] font-bold text-cream/40 mb-3">Primary skills</h3>
                   <div className="flex flex-wrap gap-2">
                     {candidate.skills.primary.map((s: any) => (
                       <Badge key={s} className="bg-cream text-dark font-black text-[10px] rounded-sm py-1">
@@ -300,7 +300,7 @@ export default function CandidateDetailsPage() {
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-[10px] font-bold text-cream/40 tracking-widest mb-3">Secondary</h3>
+                  <h3 className="text-[10px] font-bold text-cream/40 mb-3">Secondary</h3>
                   <div className="flex flex-wrap gap-2">
                     {candidate.skills.secondary.map((s: any) => (
                       <Badge key={s} variant="secondary" className="border-cream/20 text-cream/70 font-bold text-[10px] rounded-sm py-1">
@@ -336,7 +336,7 @@ export default function CandidateDetailsPage() {
                 <div className="space-y-3 pt-4 border-t border-cream/10">
                   <div className="flex items-center gap-2 text-amber-500 mb-1">
                     <AlertCircle className="w-4 h-4" />
-                    <span className="text-xs font-bold tracking-wider">Growth areas</span>
+                    <span className="text-xs font-bold">Growth areas</span>
                   </div>
                   <ul className="space-y-2">
                     {candidate.aiInsights.weaknesses.map((s: any, i: number) => (
@@ -348,7 +348,7 @@ export default function CandidateDetailsPage() {
                 </div>
 
                 <div className="mt-4 p-4 bg-dark/40 rounded border border-cream/10">
-                  <div className="text-[10px] font-bold text-cream/40 tracking-wider mb-2">Requirement parity</div>
+                  <div className="text-[10px] font-bold text-cream/40 mb-2">Requirement parity</div>
                   <div className="text-sm italic text-cream/80 font-medium">&quot;{candidate.aiInsights.parity}&quot;</div>
                 </div>
               </Card>
@@ -362,7 +362,7 @@ export default function CandidateDetailsPage() {
               </h2>
               <Card className="p-6 space-y-6">
                 <div>
-                  <h3 className="text-[10px] font-bold text-cream/40 tracking-widest mb-3">Certifications</h3>
+                  <h3 className="text-[10px] font-bold text-cream/40 mb-3">Certifications</h3>
                   <div className="space-y-3">
                     {candidate.certifications && candidate.certifications.length > 0 ? (
                       candidate.certifications.map((cert: any, i: number) => (
@@ -383,7 +383,7 @@ export default function CandidateDetailsPage() {
                 </div>
 
                 <div className="pt-4 border-t border-cream/10">
-                  <h3 className="text-[10px] font-bold text-cream/40 tracking-widest mb-3">Languages</h3>
+                  <h3 className="text-[10px] font-bold text-cream/40 mb-3">Languages</h3>
                   <div className="flex flex-wrap gap-2">
                     {candidate.languages.map((lang: any, i: number) => (
                       <Badge key={i} className="bg-cream/5 text-cream border-cream/10 py-1.5 px-3">

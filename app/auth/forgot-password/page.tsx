@@ -1,0 +1,139 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { ArrowRight, Mail } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import toast from 'react-hot-toast';
+
+export default function ForgotPasswordPage() {
+    const [loading, setLoading] = useState(false);
+    const [email, setEmail] = useState('');
+    const [submitted, setSubmitted] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email) {
+            return toast.error('Please enter your email');
+        }
+
+        setLoading(true);
+        try {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            setSubmitted(true);
+            toast.success('Recovery link sent!');
+        } catch (error: unknown) {
+            toast.error('Failed to send recovery link');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const patternSvg = `data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 30-30 30L0 30z' fill='none' stroke='%23DAC5A7' stroke-opacity='0.4' stroke-width='1'/%3E%3Cpath d='M30 60L0 30' fill='none' stroke='%23DAC5A7' stroke-opacity='0.4' stroke-width='1'/%3E%3C/svg%3E`;
+
+    return (
+        <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-dark relative overflow-hidden">
+            {/* Background Pattern */}
+            <div
+                className="fixed inset-0 z-0 pointer-events-none opacity-[0.22]"
+                style={{ backgroundImage: `url("${patternSvg}")`, backgroundSize: '70px' }}
+            />
+
+            {/* Left Side: Hero / Brand */}
+            <div className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden bg-linear-to-br from-cream/10 via-dark to-dark border-r border-cream/5">
+                <div className="relative z-10">
+                    <Link href="/" className="inline-flex items-center gap-3 group">
+                        <div className="w-10 h-10 border-2 border-cream/30 bg-dark rounded-full flex items-center justify-center transition-all group-hover:border-cream group-hover:rotate-12 duration-500 overflow-hidden shadow-2xl shadow-cream/20">
+                            <img src="/logo.png" alt="BORA Logo" className="w-full h-full object-cover" />
+                        </div>
+                        <span className="text-3xl font-bold text-cream transition-all duration-700">
+                            Bora
+                        </span>
+                    </Link>
+                </div>
+
+                <div className="relative z-10 space-y-12">
+                    <div className="space-y-6">
+                        <h1 className="text-5xl xl:text-6xl font-bold text-cream leading-tight">
+                            Regain access to your <br />
+                            <span className="text-transparent bg-clip-text bg-linear-to-r from-cream to-cream/40 italic font-serif">Workspace</span>
+                        </h1>
+                        <p className="text-xl text-cream/70 max-w-xl leading-relaxed">
+                            Don&apos;t worry if you forgot your password. We&apos;ll help you get back to your talent pipeline quickly.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Right Side: Form */}
+            <div className="flex items-center justify-center p-8 lg:p-12 bg-dark">
+                <div className="w-full max-w-lg">
+                    <div className="lg:hidden text-center mb-10">
+                        <Link href="/" className="inline-flex items-center gap-3">
+                            <div className="w-10 h-10 border border-cream/20 bg-dark rounded-full flex items-center justify-center overflow-hidden">
+                                <img src="/logo.png" alt="BORA Logo" className="w-full h-full object-cover" />
+                            </div>
+                            <span className="text-2xl font-bold text-cream">Bora</span>
+                        </Link>
+                    </div>
+
+                    <div className="mb-12">
+                        <h2 className="text-3xl font-bold text-cream">Recover Password</h2>
+                        <p className="text-cream/50 mt-2 font-medium">Enter your registered email address to receive password reset instructions.</p>
+                    </div>
+
+                    <div className="bg-cream/5 border border-cream/10 p-10 rounded-2xl space-y-8">
+                        {!submitted ? (
+                            <form className="space-y-6" onSubmit={handleSubmit}>
+                                <div className="space-y-2 group">
+                                    <label className="text-sm font-medium text-cream/60 ml-1 group-focus-within:text-cream transition-colors">Email address</label>
+                                    <div className="relative">
+                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cream/20 group-focus-within:text-cream/60 transition-colors" />
+                                        <Input
+                                            type="email"
+                                            placeholder="name@company.com"
+                                            value={email}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                                            className="bg-cream/5 border-cream/20 h-14 pl-4 rounded-xl text-cream focus:border-cream/50 transition-all font-medium placeholder:text-cream/20"
+                                        />
+                                    </div>
+                                </div>
+
+                                <Button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full h-14 bg-cream text-dark hover:bg-white font-bold text-lg rounded-xl transition-all shadow-xl shadow-cream/10 group/btn disabled:opacity-50 disabled:cursor-not-allowed">
+                                    {loading ? 'Sending link...' : <>Send reset link <ArrowRight className="ml-2 w-5 h-5 group-hover/btn:translate-x-1 transition-transform" /></>}
+                                </Button>
+                            </form>
+                        ) : (
+                            <div className="text-center py-4 space-y-4">
+                                <div className="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
+                                    <Mail className="w-8 h-8" />
+                                </div>
+                                <h3 className="text-xl font-bold text-cream">Check your inbox</h3>
+                                <p className="text-cream/60 font-medium">We have sent a password recovery link to your email.</p>
+                            </div>
+                        )}
+
+                        <div className="relative py-2 mt-8">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-cream/10"></div>
+                            </div>
+                            <div className="relative flex justify-center">
+                                <span className="bg-dark/80 px-4 text-cream/40 backdrop-blur-sm text-xs font-semibold">Remembered it?</span>
+                            </div>
+                        </div>
+
+                        <Link href="/auth/login" className="block">
+                            <Button variant="secondary" className="w-full h-14 border-cream/10 text-cream/60 hover:text-cream hover:bg-cream/5 font-semibold text-md rounded-xl transition-all">
+                                Back to login
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
