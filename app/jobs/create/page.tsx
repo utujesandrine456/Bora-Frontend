@@ -52,11 +52,9 @@ export default function CreateJobPage() {
       company: formData.company,
       location: formData.location,
       description: formData.description,
-      type: formData.type,
-      requirements: skills,
       skills: skills,
       experienceYears: Number(formData.experienceYears) || 0,
-      status: status
+      status: (status === 'draft' ? 'draft' : 'open') as 'draft' | 'open'
     };
 
 
@@ -64,9 +62,16 @@ export default function CreateJobPage() {
       const response = await jobsApi.createJob(payload);
       toast.success(`Job ${status === 'open' ? 'published' : 'saved as draft'} successfully`);
       router.push('/jobs');
-    } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'Failed to create job';
-      toast.error(msg);
+    } catch (error: any) {
+      const responseData = error.response?.data;
+      const errorMsg = responseData?.message || error.message || 'Failed to create job';
+      console.error('CreateJobPage FULL ERROR:', responseData || error);
+
+      if (Array.isArray(errorMsg)) {
+        toast.error(errorMsg.join(', '));
+      } else {
+        toast.error(errorMsg);
+      }
     } finally {
       setSaving(false);
     }
