@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
 import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -69,12 +68,7 @@ export default function SignupPage() {
                 </div>
 
                 <div className="relative z-10 space-y-12">
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                        className="space-y-6"
-                    >
+                    <div className="space-y-6">
                         <h1 className="text-5xl xl:text-6xl font-bold text-cream leading-tight">
                             Unlock your <br />
                             <span className="text-transparent bg-clip-text bg-linear-to-r from-cream to-cream/40 italic font-serif">true potential</span>
@@ -83,7 +77,7 @@ export default function SignupPage() {
                             Join the elite network of talent screened by the world&apos;s most advanced AI recruitment platform.
                             Get matched with roles that truly fit your expertise.
                         </p>
-                    </motion.div>
+                    </div>
 
                     <div className="space-y-5">
                         <div className="flex items-center gap-4 text-cream/80">
@@ -104,12 +98,7 @@ export default function SignupPage() {
 
             {/* Right side form */}
             <div className="flex items-center justify-center p-8 lg:p-12 bg-dark">
-                <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="w-full max-w-lg"
-                >
+                <div className="w-full max-w-lg">
                     <div className="lg:hidden text-center mb-10">
                         <Link href="/" className="inline-flex items-center gap-3 group">
                             <div className="w-10 h-10 border border-cream bg-dark rounded-full flex items-center justify-center overflow-hidden">
@@ -202,7 +191,7 @@ export default function SignupPage() {
                             </Button>
                         </Link>
                     </div>
-                </motion.div>
+                </div>
             </div>
         </div>
     );
