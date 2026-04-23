@@ -20,9 +20,10 @@ import toast from 'react-hot-toast';
 
 
 function ScreeningResultsContent() {
-  const [activeCandidateId, setActiveCandidateId] = useState<string | number>('');
   const searchParams = useSearchParams();
   const jobId = searchParams.get('jobId');
+  const candidateIdFromQuery = searchParams.get('candidateId');
+  const [activeCandidateId, setActiveCandidateId] = useState<string | number>(candidateIdFromQuery || '');
 
   interface MappedResult {
     id: string; name: string; score: number; isBest: boolean; barColor: string; matchAnalysis: string; role: string;
@@ -137,7 +138,7 @@ function ScreeningResultsContent() {
     } finally {
       setLoading(false);
     }
-  }, [jobId, activeCandidateId]);
+  }, [jobId]);
 
   useEffect(() => {
     fetchData();

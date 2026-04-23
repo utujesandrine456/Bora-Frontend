@@ -27,7 +27,7 @@ export default function ApplicantsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [selectedId, setSelectedId] = useState<string | number | null>(null);
-  interface Applicant { id: number; dbId: string | undefined; name: string; role: string | undefined; location: string | undefined; score: number; status: string; date: string; avatar: string; screened: boolean; jobStatus: string; }
+  interface Applicant { id: number; dbId: string | undefined; jobId: string | undefined; name: string; role: string | undefined; location: string | undefined; score: number; status: string; date: string; avatar: string; screened: boolean; jobStatus: string; }
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -39,6 +39,7 @@ export default function ApplicantsPage() {
       const mapped = response.data.map((p: TalentProfile, index: number) => ({
         id: index + 1,
         dbId: p._id,
+        jobId: p.jobId,
         name: `${p.firstName} ${p.lastName}`,
         role: p.headline,
         location: p.location,
@@ -78,9 +79,22 @@ export default function ApplicantsPage() {
     } finally {
       setUploading(false);
     }
+  };  const handleViewResults = async (applicant: Applicant) => {
+    if (!applicant.dbId) return;
+
+    const toastId = toast.loading('Fetching screening data...');
+    try {
+      // Call the API as requested by the user
+      const profile = await profilesApi.getProfileById(applicant.dbId);
+      const targetJobId = profile.jobId || applicant.jobId || 'all';
+      
+      router.push(`/screening/results?jobId=${targetJobId}&candidateId=${profile._id}`);
+      toast.dismiss(toastId);
+    } catch (error) {
+      console.error('Error fetching profile for screening results:', error);
+      toast.error('Failed to load screening data', { id: toastId });
+    }
   };
-
-
 
 
   const [showFilters, setShowFilters] = useState(false);
@@ -233,12 +247,16 @@ export default function ApplicantsPage() {
 
                       <div className="flex flex-col gap-3 ml-auto shrink-0">
                         {applicant.screened && (
-                          <Link href={`/screening/results?jobId=${applicant.jobId || 'all'}`}>
-                            <button className="cursor-pointer w-full inline-flex items-center justify-center gap-2 py-3 px-6 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-dark transition-all rounded-md font-bold text-xs uppercase tracking-tighter">
-                              <Sparkles className="w-3.5 h-3.5" />
-                              Screening Results
-                            </button>
-                          </Link>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewResults(applicant);
+                            }}
+                            className="cursor-pointer w-full inline-flex items-center justify-center gap-2 py-3 px-6 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-dark transition-all rounded-md font-bold text-xs uppercase tracking-tighter"
+                          >
+                            <Sparkles className="w-3.5 h-3.5" />
+                            Screening Results
+                          </button>
                         )}
                         <Link href={`/applicants/${applicant.dbId || applicant.id}`}>
                           <button className="cursor-pointer w-full inline-flex items-center justify-center gap-2 py-3 px-6 bg-cream text-dark hover:bg-white transition-all rounded-md font-bold text-sm">
