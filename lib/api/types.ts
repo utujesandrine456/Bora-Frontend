@@ -14,6 +14,8 @@ export interface RegisterResponse {
     name: string;
     email: string;
     role: string;
+    photo?: string;
+    company?: string;
   };
 }
 
@@ -29,7 +31,18 @@ export interface LoginResponse {
     name: string;
     email: string;
     role: string;
+    photo?: string;
+    company?: string;
   };
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  password?: string;
 }
 
 export interface User {
@@ -37,6 +50,7 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  photo?: string;
   company?: string;
   createdAt: string;
 }
@@ -75,10 +89,25 @@ export interface BulkProfileInput {
 }
 
 export interface ScreeningResult {
+  _id?: string;
   jobId: string;
   profileId: string;
   score: number;
   matchAnalysis: string;
+  skillsScore?: number;
+  experienceScore?: number;
+  educationScore?: number;
   version: number;
   createdAt: string;
+}
+
+export interface Notification {
+  _id: string;
+  userId: string;
+  type: 'application' | 'message' | 'system' | 'job' | 'screening';
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

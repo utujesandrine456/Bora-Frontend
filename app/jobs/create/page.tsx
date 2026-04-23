@@ -1,236 +1,249 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { X, MapPin } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  Users,
+  Briefcase,
+  ClipboardCheck,
+  ArrowUpRight,
+  ArrowDownRight,
+  Clock,
+  ChevronRight,
+  MoreHorizontal,
+  Sparkles,
+  Download
+} from 'lucide-react';
+import Link from 'next/link';
 import TopNav from '@/components/TopNav';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
-import { Input, Textarea, Select } from '@/components/ui/Input';
+import Badge from '@/components/ui/Badge';
+
 import { jobsApi } from '@/lib/api/jobs';
-import toast from 'react-hot-toast';
+import { profilesApi } from '@/lib/api/profiles';
+import { Job } from '@/lib/api/types';
+import { TalentProfile } from '@/lib/types/profile';
 
-export default function CreateJobPage() {
-  const router = useRouter();
-  const [skills, setSkills] = useState<string[]>(['React', 'TypeScript', 'Tailwind CSS']);
-  const [newSkill, setNewSkill] = useState('');
+export default function Dashboard() {
 
-  const [formData, setFormData] = useState({
-    title: '',
-    company: '',
-    type: 'full-time',
-    location: '',
-    description: '',
-    experienceYears: 0,
-    experienceLevel: 'mid',
-    education: 'bachelor'
-  });
-  const [saving, setSaving] = useState(false);
+  interface Stat {
+    label: string;
+    value: string;
+    change: string;
+    trend: string;
+    icon: React.ElementType;
+    color: string;
+  }
 
-  const addSkill = () => {
-    if (newSkill && !skills.includes(newSkill)) {
-      setSkills([...skills, newSkill]);
-      setNewSkill('');
-      toast.success('Skill added');
+  interface Applicant {
+    id: string;
+    name: string;
+    role: string;
+    match: number;
+    status: string;
+    avatar: string;
+  }
+
+  const [stats, setStats] = useState<Stat[]>([]);
+  const [recentApplicants, setRecentApplicants] = useState<Applicant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [csvDownloading, setCsvDownloading] = useState(false);
+  const [csvError, setCsvError] = useState<string | null>(null);
+
+  const handleDownloadCSV = async () => {
+    try {
+      setCsvError(null);
+      setCsvDownloading(true);
+      await profilesApi.downloadApplicantsCSV();
+    } catch (err: any) {
+      console.error('CSV download failed:', err);
+      setCsvError('Failed to download CSV. Please try again.');
+    } finally {
+      setCsvDownloading(false);
     }
   };
 
-  const removeSkill = (skillToRemove: string) => {
-    setSkills(skills.filter(s => s !== skillToRemove));
-  };
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
 
-  const handlePublish = async (status: 'open' | 'draft' = 'open') => {
-    if (!formData.title || !formData.company || !formData.description) {
-      return toast.error('Title, company, and description are required');
-    }
+        // ✅ Safe Jobs Fetch
+        let jobs: Job[] = [];
+        try {
+          jobs = await jobsApi.getJobs();
+        } catch (jobsErr) {
+          console.error('Dashboard: Failed to fetch jobs:', jobsErr);
+        }
 
-    setSaving(true);
-    const payload = {
-      title: formData.title,
-      company: formData.company,
-      description: formData.description,
-      location: formData.location || 'Remote',
-      skills: skills,
-      requirements: skills,
-      status: 'open'
+        // ✅ Safe Profiles Fetch
+        let profilesResponse: { data: TalentProfile[]; total: number } = { data: [], total: 0 };
+        try {
+          profilesResponse = await profilesApi.getProfiles({ limit: 5 });
+        } catch (profilesErr: any) {
+          const status = profilesErr?.response?.status;
+
+          if (status === 401) {
+            console.warn('Session expired — redirecting...');
+            return;
+          }
+
+          console.error('Dashboard: Failed to fetch profiles:', profilesErr);
+        }
+
+        // ✅ Stats
+        const activeJobs = jobs.filter(
+          (j) => j.status !== 'closed' && j.status !== 'archived'
+        ).length;
+
+        const totalApplicants = profilesResponse.total || 0;
+
+        const profilesWithScores = profilesResponse.data.filter(
+          (p: any) => p.aiScore && p.aiScore > 0
+        ).length;
+
+        const totalProfiles = profilesResponse.total || 0;
+
+        const screeningProgress =
+          totalProfiles > 0
+            ? Math.round((profilesWithScores / totalProfiles) * 100)
+            : 0;
+
+        setStats([
+          {
+            label: 'Total Applicants',
+            value: totalApplicants.toLocaleString(),
+            change: '+5.2%',
+            trend: 'up',
+            icon: Users,
+            color: 'text-cream'
+          },
+          {
+            label: 'Active Jobs',
+            value: activeJobs.toString(),
+            change: '+1',
+            trend: 'up',
+            icon: Briefcase,
+            color: 'text-emerald-500'
+          },
+          {
+            label: 'Screening Progress',
+            value: `${screeningProgress}%`,
+            change: '+12%',
+            trend: 'up',
+            icon: ClipboardCheck,
+            color: 'text-amber-500'
+          }
+        ]);
+
+        // ✅ Recent Applicants
+        const mappedApplicants = (profilesResponse.data || [])
+          .slice(0, 3)
+          .map((p: TalentProfile) => ({
+            id: p._id || '',
+            name: `${p.firstName} ${p.lastName}`,
+            role: p.headline || 'Applicant',
+            match: p.aiScore || 0,
+            status:
+              p.aiScore && p.aiScore >= 90
+                ? 'High Match'
+                : p.aiScore && p.aiScore > 0
+                ? 'In Review'
+                : 'Not Screened',
+            avatar:
+              `${p.firstName?.[0] || ''}${p.lastName?.[0] || ''}` || '?'
+          }));
+
+        setRecentApplicants(mappedApplicants);
+
+      } catch (error) {
+        console.error('Dashboard: Unexpected error:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    console.log('Publishing Job (Fixed Payload):', JSON.stringify(payload, null, 2));
-
-    try {
-      const response = await jobsApi.createJob(payload as any);
-      console.log('CreateJobPage: Creation Response:', response);
-      toast.success(`Job published successfully`);
-      router.push('/jobs');
-    } catch (error: any) {
-      console.error('CreateJobPage FULL ERROR:', error);
-      const serverMessage = error.response?.data?.message || error.response?.data?.error || error.response?.statusText;
-      const msg = serverMessage || (error instanceof Error ? error.message : 'Failed to create job');
-      toast.error(`Error: ${msg}`);
-    } finally {
-      setSaving(false);
-    }
-  };
+    fetchDashboardData();
+  }, []);
 
   return (
-    <div className="flex flex-col h-full bg-dark text-cream">
+    <div className="flex flex-col h-full bg-dark min-h-screen">
       <TopNav />
 
-      <div className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-[1200px] mx-auto pb-20">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 border-b border-cream/20 pb-8">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-black text-cream mb-4">Create Job</h1>
-              <p className="text-cream/60 font-medium text-md">Define role requirements and candidate criteria</p>
-            </div>
-          </div>
+      <div className="flex-1 p-8 max-w-7xl mx-auto w-full space-y-12 pb-32">
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            {/* Main Form */}
-            <div className="lg:col-span-2 space-y-10">
-              <Card padding="lg">
-                <h2 className="text-[24px] font-black text-cream mb-8 flex items-center gap-3">
-                  <div className="w-2 h-8 bg-cream rounded-md"></div>
-                  Basic Information
-                </h2>
-
-                <div className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <Input
-                      label="Job Title"
-                      placeholder="E.g. Senior Frontend Developer"
-                      value={formData.title}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, title: e.target.value })}
-                    />
-                    <Input
-                      label="Company Name"
-                      placeholder="E.g. TechCorp Inc."
-                      value={formData.company}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, company: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <Select
-                      label="Job Type"
-                      value={formData.type}
-                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, type: e.target.value })}
-                      options={[
-                        { value: 'full-time', label: 'Full-time' },
-                        { value: 'contract', label: 'Contract' },
-                        { value: 'freelance', label: 'Freelance' }
-                      ]}
-                    />
-                    <Input
-                      label="Location"
-                      placeholder="E.g. Remote"
-                      icon={MapPin}
-                      value={formData.location}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, location: e.target.value })}
-                    />
-                  </div>
-
-                  <Textarea
-                    label="Job Description"
-                    placeholder="Describe the role..."
-                    rows={6}
-                    className='text-md font-medium'
-                    value={formData.description}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
-                  />
-                </div>
-              </Card>
-
-              <Card padding="lg">
-                <h2 className="text-[24px] font-black text-cream mb-8 flex items-center gap-3">
-                  <div className="w-2 h-8 bg-cream rounded-md"></div>
-                  Skills & Expertise
-                </h2>
-                <div className="space-y-8">
-                  <div className="flex items-end gap-2">
-                    <Input
-                      value={newSkill}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewSkill(e.target.value)}
-                      onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && addSkill()}
-                      placeholder="Add Required Skills..."
-                      className="flex-1"
-                    />
-                    <Button variant="secondary" size="md" onClick={addSkill} className="px-8">
-                      Add
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    {skills.map(skill => (
-                      <Badge key={skill} variant="secondary" className="px-5 py-2 flex items-center gap-2 group">
-                        {skill}
-                        <X
-                          className="w-4 h-4 cursor-pointer hover:text-red-500 transition-colors"
-                          onClick={() => removeSkill(skill)}
-                        />
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </Card>
-            </div>
-
-            {/* Sidebar (Settings/Publish) */}
-            <div className="space-y-10">
-              <Card padding="lg">
-                <h2 className="text-[24px] font-black text-cream mb-8 flex items-center gap-3">
-                  <div className="w-2 h-8 bg-cream"></div>
-                  Role Criteria
-                </h2>
-                <div className="space-y-8">
-                  <Select
-                    label="Experience Level"
-                    value={formData.experienceLevel}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, experienceLevel: e.target.value })}
-                    options={[
-                      { value: 'entry', label: 'ENTRY LEVEL (0-2 YRS)' },
-                      { value: 'junior', label: 'JUNIOR (2-4 YRS)' },
-                      { value: 'mid', label: 'MID-LEVEL (4-7 YRS)' },
-                      { value: 'senior', label: 'SENIOR (7-10 YRS)' },
-                      { value: 'lead', label: 'LEAD (10+ YRS)' }
-                    ]}
-                  />
-                  <Select
-                    label="Education"
-                    value={formData.education}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, education: e.target.value })}
-                    options={[
-                      { value: 'bachelor', label: "BACHELOR'S DEGREE" },
-                      { value: 'master', label: "MASTER'S DEGREE" },
-                      { value: 'phd', label: 'PHD' }
-                    ]}
-                  />
-                </div>
-              </Card>
-
-              <div className="flex flex-col gap-4">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  disabled={saving}
-                  className="w-full h-14 text-md border border-cream disabled:opacity-50"
-                  onClick={() => handlePublish('open')}
-                >
-                  {saving ? 'Publishing...' : 'Publish Job'}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  disabled={saving}
-                  className="w-full h-14 text-md disabled:opacity-50"
-                  onClick={() => handlePublish('draft')}
-                >
-                  Save Draft
-                </Button>
-              </div>
-            </div>
-          </div>
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-cream/10 pb-12">
+          <h1 className="text-5xl font-black text-cream">
+            Recruitment Intelligence
+          </h1>
         </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {stats.map((stat, i) => (
+            <Card key={i} variant="glass" className="p-8">
+              <div className="flex items-center gap-4 mb-4">
+                <stat.icon className="w-5 h-5 text-cream" />
+                <div className="text-md font-bold text-cream/80">
+                  {stat.label}
+                </div>
+              </div>
+
+              <div className="flex items-baseline gap-3">
+                <div className={`text-4xl font-black ${stat.color}`}>
+                  {loading ? '...' : stat.value}
+                </div>
+                {!loading && (
+                  <div className="text-xs text-emerald-500 flex items-center">
+                    <ArrowUpRight size={12} /> {stat.change}
+                  </div>
+                )}
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* Recent Applicants */}
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl text-cream font-bold">
+              Recent applicants
+            </h2>
+            <Link href="/applicants">View All</Link>
+          </div>
+
+          {loading ? (
+            <p className="text-cream">Loading...</p>
+          ) : recentApplicants.map((app) => (
+            <Link key={app.id} href={`/applicants/${app.id}`}>
+              <Card className="p-4 mb-3 cursor-pointer">
+                <div className="flex justify-between">
+                  <div>
+                    <h3 className="text-cream font-bold">{app.name}</h3>
+                    <p className="text-cream/50">{app.role}</p>
+                  </div>
+                  <Badge>{app.status}</Badge>
+                </div>
+              </Card>
+            </Link>
+          ))}
+        </div>
+
+        {/* Quick Actions */}
+        <Card className="p-6">
+          <button
+            onClick={handleDownloadCSV}
+            disabled={csvDownloading}
+            className="w-full py-3 bg-cream text-dark rounded"
+          >
+            {csvDownloading ? 'Downloading…' : 'Download CSV'}
+          </button>
+
+          {csvError && (
+            <p className="text-red-400 text-xs mt-2">{csvError}</p>
+          )}
+        </Card>
+
       </div>
     </div>
   );

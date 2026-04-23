@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
 import {
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import TopNav from '@/components/TopNav';
 import Card from '@/components/ui/Card';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const STEPS = [
   { id: 1, name: 'Initializing Neural Engine', icon: BrainCircuit, duration: 2000 },
@@ -19,8 +20,6 @@ const STEPS = [
   { id: 4, name: 'Predicting Job Fit Match', icon: Zap, duration: 2500 },
   { id: 5, name: 'Finalizing AI Insights', icon: BarChart3, duration: 2000 },
 ];
-
-import { useRouter, useSearchParams } from 'next/navigation';
 
 function ScreeningLoadingContent() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -190,7 +189,12 @@ function ScreeningLoadingContent() {
 
 export default function ScreeningLoadingPage() {
   return (
-    <Suspense fallback={<div className="flex h-screen bg-dark items-center justify-center text-cream">Loading...</div>}>
+    <Suspense fallback={
+      <div className="flex flex-col h-full bg-dark min-h-screen items-center justify-center space-y-4">
+        <div className="w-12 h-12 border-4 border-cream border-t-transparent rounded-full animate-spin opacity-20"></div>
+        <p className="text-cream/40 font-bold tracking-widest text-sm uppercase">Preparing Engine...</p>
+      </div>
+    }>
       <ScreeningLoadingContent />
     </Suspense>
   );

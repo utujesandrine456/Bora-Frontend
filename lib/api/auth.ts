@@ -1,5 +1,12 @@
 import { apiClient } from './client';
-import { RegisterRequest, RegisterResponse, LoginRequest, LoginResponse } from './types';
+import {
+  RegisterRequest,
+  RegisterResponse,
+  LoginRequest,
+  LoginResponse,
+  ForgotPasswordRequest,
+  ResetPasswordRequest
+} from './types';
 
 export const authApi = {
   register: async (data: RegisterRequest): Promise<RegisterResponse> => {
@@ -24,18 +31,39 @@ export const authApi = {
       return response.data;
     }
 
-    const cleanToken = token.trim().replace(/^["']|["']$/g, ''); // strip accidental quotes
+    const cleanToken =
+      typeof token === 'string'
+        ? token.trim().replace(/^["']|["']$/g, '')
+        : '';
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && cleanToken) {
       localStorage.setItem('token', cleanToken);
 
-      // Store user info from wherever the backend puts it
-      const user = raw?.user;
-      if (user) {
-        localStorage.setItem('user', JSON.stringify(user));
+      const loggedInUser = raw?.user;
+
+      if (loggedInUser) {
+        const photoKey = `bora_photo_${loggedInUser.email || loggedInUser.id || (loggedInUser as any)._id}`;
+        const savedPhoto = localStorage.getItem(photoKey);
+
+        const userWithPhoto = savedPhoto
+          ? {
+              ...loggedInUser,
+              id: loggedInUser.id || (loggedInUser as any)._id,
+              photo: savedPhoto
+            }
+          : {
+              ...loggedInUser,
+              id: loggedInUser.id || (loggedInUser as any)._id
+            };
+
+        localStorage.setItem('user', JSON.stringify(userWithPhoto));
+        console.log('User stored with photo restoration:', !!savedPhoto);
       }
 
-      console.log('[authApi.login] Token stored successfully. Preview:', cleanToken.substring(0, 16) + '...');
+      console.log(
+        '[authApi.login] Token stored successfully. Preview:',
+        cleanToken.substring(0, 16) + '...'
+      );
     }
 
     return response.data;
@@ -62,14 +90,14 @@ export const authApi = {
 
   /**
    * Change password for the currently logged-in user.
-   * Calls our internal Next.js API route.
+   * Uses internal API route.
    */
   changePassword: async (newPassword: string): Promise<{ message: string }> => {
     const response = await fetch('/api/auth/change-password', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        Authorization: `Bearer ${localStorage.getItem('token')}`
       },
       body: JSON.stringify({ newPassword })
     });
@@ -81,4 +109,24 @@ export const authApi = {
 
     return response.json();
   },
+
+  forgotPassword: async (
+    data: ForgotPasswordRequest
+  ): Promise<{ message: string }> => {
+    const response = await apiClient.post<{ message: string }>(
+      '/v1/auth/forgot-password',
+      data
+    );
+    return response.data;
+  },
+
+  resetPassword: async (
+    data: ResetPasswordRequest
+  ): Promise<{ message: string }> => {
+    const response = await apiClient.post<{ message: string }>(
+      '/v1/auth/reset-password',
+      data
+    );
+    return response.data;
+  }
 };

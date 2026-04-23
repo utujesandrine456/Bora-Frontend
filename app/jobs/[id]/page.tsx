@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { use, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   MapPin,
   Calendar,
@@ -13,8 +14,6 @@ import TopNav from '@/components/TopNav';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
-import { use, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { jobsApi } from '@/lib/api/jobs';
 import { profilesApi } from '@/lib/api/profiles';
@@ -37,7 +36,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
   const [loading, setLoading] = useState(true);
   const [screening, setScreening] = useState(false);
 
-  
+
   useEffect(() => {
     const fetchJobData = async () => {
       try {
@@ -51,7 +50,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
           name: `${p.firstName} ${p.lastName}`,
           skills: p.headline || 'Candidate',
           experience: p.experience?.[0]?.role || 'Professional',
-          match: p.matchScore || 0
+          match: p.aiScore || 0
         }));
 
         const screened = applicants.filter(a => a.match > 0).length;
@@ -85,6 +84,19 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
     fetchJobData();
   }, [id]);
 
+  const handleTriggerScreening = async () => {
+    try {
+      setScreening(true);
+      toast.loading('Initializing neural engine...', { id: 'screening' });
+      // In a real app, this would call screeningApi.trigger(id)
+      await new Promise(r => setTimeout(r, 1500));
+      router.push(`/screening/loading?jobId=${id}`);
+    } catch (e) {
+      toast.error('Failed to start screening', { id: 'screening' });
+    } finally {
+      setScreening(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -110,13 +122,11 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
 
       <div className="flex-1 p-8 overflow-y-auto">
         <div className="max-w-[1280px] mx-auto pb-20">
-          {/* Back button */}
           <Link href="/jobs" className="flex items-center gap-2 text-cream/60 hover:text-cream text-sm font-bold mb-10 transition-colors group w-fit">
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             <span>Back to jobs</span>
           </Link>
 
-          {/* Header Section */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 pb-8 border-b border-cream/20">
             <div>
               <h1 className="text-5xl md:text-6xl font-black text-cream mb-4">{job.title}</h1>
@@ -144,22 +154,18 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
 
             <div className="flex items-center gap-4">
               <Link href={`/jobs/${id}/edit`}>
-                <Button variant="secondary" icon={Pencil} size="md" className="px-6 py-3">
-                  Edit Job
+                <Button variant="secondary" className="px-6 py-3 font-bold">
+                  <Pencil className="w-4 h-4 mr-2" /> Edit Job
                 </Button>
               </Link>
-              <Badge variant="success" className="px-10 py-4 text-sm font-black">
-                Open
+              <Badge variant={job.status === 'Open' || job.status === 'active' ? 'success' : 'secondary'} className="px-10 py-4 text-sm font-black">
+                {job.status?.toUpperCase() || 'OPEN'}
               </Badge>
             </div>
           </div>
 
-          {/* Main Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-
-            {/* Left Column (Main Info) */}
             <div className="lg:col-span-2 space-y-10">
-              {/* Job Overview */}
               <Card padding="lg">
                 <h2 className="text-[22px] font-black text-cream mb-6 flex items-center gap-3">
                   <div className="w-2 h-8 bg-cream rounded-md"></div>
@@ -170,7 +176,6 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
                 </p>
               </Card>
 
-              {/* Technical Requirements */}
               <Card padding="lg">
                 <h2 className="text-[22px] font-black text-cream mb-8 flex items-center gap-3">
                   <div className="w-2 h-8 bg-cream rounded-md"></div>
@@ -188,31 +193,20 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
               <Card padding="lg">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12 border-b border-cream/10 pb-6">
                   <h2 className="text-[22px] font-black text-cream">Applicants ({job.applicantsCount})</h2>
-                  {job.status === 'closed' ? (
-                    <div className="px-8 py-4 bg-red-500/10 border border-red-500/20 rounded-md text-red-500 font-bold text-center">
-                      This position is currently closed
-                    </div>
-                  ) : (
-                    <div className="flex gap-4">
-                      <Link href={`/apply/${job._id}`} className="flex-1">
-                        <Button className="w-full h-14 bg-cream text-dark hover:bg-white font-black text-lg rounded-md transition-all shadow-xl shadow-cream/10">
-                          Apply for this Position
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="secondary"
-                        onClick={() => setScreening(true)}
-                        disabled={screening}
-                        className="h-14 px-8 border-cream/20 text-cream hover:bg-cream/5 font-bold"
-                      >
-                        {screening ? 'Processing...' : 'Run AI Screening'}
-                      </Button>
-                    </div>
-                  )}
+                  <div className="flex gap-4">
+                    <Button
+                      variant="primary"
+                      onClick={handleTriggerScreening}
+                      disabled={screening || job.applicantsCount === 0}
+                      className="h-14 px-10 bg-cream text-dark hover:bg-white font-black text-lg rounded-md transition-all shadow-xl"
+                    >
+                      {screening ? 'Processing...' : 'Run AI Screening'}
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
-                  {job.applicants.map((applicant) => (
+                  {job.applicants.length > 0 ? job.applicants.map((applicant) => (
                     <div key={applicant.name} className="p-8 border border-cream/20 bg-dark rounded-md hover:border-cream hover:bg-cream/5 transition-all group cursor-pointer relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-cream/5 rounded-md -mr-16 -mt-16 group-hover:bg-cream/10 transition-colors"></div>
                       <div className="flex items-start justify-between relative z-10">
@@ -228,20 +222,22 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
                         </div>
                         <div className="text-right">
                           <div className="flex flex-col items-end">
-                            <span className="text-4xl font-black text-cream leading-none">{applicant.match}%</span>
-                            <span className="text-cream/60 font-black text-[10px] mt-2">Score match</span>
+                            <span className="text-4xl font-black text-cream leading-none">{applicant.match > 0 ? `${applicant.match}%` : '—'}</span>
+                            <span className="text-cream/60 font-black text-[10px] mt-2">{applicant.match > 0 ? 'Score match' : 'Not screened'}</span>
                           </div>
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="py-20 text-center border-2 border-dashed border-cream/10 rounded-xl">
+                      <p className="text-cream/30 font-bold">No applicants found for this position yet.</p>
+                    </div>
+                  )}
                 </div>
               </Card>
             </div>
 
-            {/* Right Column (Sidebar) */}
             <div className="space-y-10">
-              {/* Quick Info Card */}
               <Card padding="lg">
                 <h2 className="text-[22px] font-black text-cream mb-10 flex items-center gap-3">
                   <div className="w-2 h-8 bg-cream"></div>
@@ -263,7 +259,6 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
                 </div>
               </Card>
 
-              {/* Application Summary Card */}
               <Card padding="lg" className="border-cream bg-cream">
                 <h2 className="text-[22px] font-black mb-10 text-dark flex items-center gap-3">
                   <div className="w-2 h-8 bg-dark"></div>
