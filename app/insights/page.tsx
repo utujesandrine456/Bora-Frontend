@@ -19,6 +19,8 @@ import {
     AreaChart,
     Area,
 } from 'recharts';
+import { useEffect, useState } from 'react';
+import { profilesApi } from '@/lib/api/profiles';
 import {
     TrendingUp,
     Users,
@@ -33,8 +35,6 @@ import TopNav from '@/components/TopNav';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
-import { downloadAsFile, jsonToCsv } from '@/lib/utils/download';
-import toast from 'react-hot-toast';
 
 // Types for charts
 interface TooltipPayload {
@@ -107,21 +107,38 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
 };
 
 export default function InsightsPage() {
-    const handleDownloadReport = () => {
-        const reportData = [
-            { Metric: 'Avg. Assessment Score', Value: '84.2%' },
-            { Metric: 'Time to Shortlist', Value: '3.5 days' },
-            { Metric: 'Interview Conversion', Value: '24%' },
-            { Metric: 'Active Candidates', Value: '1,280' },
-            { Metric: 'Skill Distribution (Frontend)', Value: '120/150' },
-            { Metric: 'Skill Distribution (Backend)', Value: '98/150' },
-            { Metric: 'Top Insight', Value: 'Backend Talent Surge' }
-        ];
+    const [stats, setStats] = useState({
+        avgScore: 0,
+        timeToShortlist: '3.5d',
+        conversion: '24%',
+        activeCandidates: 0
+    });
+    const [loading, setLoading] = useState(true);
 
-        const csvContent = jsonToCsv(reportData);
-        downloadAsFile(`insight_report_${new Date().toISOString().split('T')[0]}.csv`, csvContent, 'text/csv');
-        toast.success('Insights report generated and downloading...');
-    };
+    useEffect(() => {
+        const fetchInsightsData = async () => {
+            try {
+                setLoading(true);
+                const profilesRes = await profilesApi.getProfiles({ limit: 1000 });
+                const scores = profilesRes.data.map(p => p.matchScore || 0).filter(s => s > 0);
+                const avg = scores.length > 0
+                    ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)
+                    : '0';
+
+                setStats({
+                    avgScore: Number(avg),
+                    timeToShortlist: '3.5d', // Nominal
+                    conversion: '24%', // Nominal
+                    activeCandidates: profilesRes.total || 0
+                });
+            } catch (error) {
+                console.error('Insights: Failed to fetch real data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchInsightsData();
+    }, []);
 
     return (
         <div className="flex flex-col h-full bg-dark min-h-screen text-cream">
@@ -129,9 +146,9 @@ export default function InsightsPage() {
 
             <div className="flex-1 p-8 space-y-10 max-w-7xl mx-auto w-full">
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-4 border-b border-cream/10 pb-12">
                     <div className="space-y-1">
-                        <h1 className="text-4xl md:text-5xl font-black text-cream tracking-tighter leading-none">
+                        <h1 className="text-4xl md:text-5xl font-black text-cream  leading-none">
                             Candidate <span className="text-cream/40 italic serif">Insights</span>
                         </h1>
                         <p className="text-cream/60 font-medium text-lg italic serif max-w-2xl">
@@ -145,10 +162,7 @@ export default function InsightsPage() {
                             <span>Last 30 Days</span>
                             <ChevronDown className="w-3 h-3 opacity-50" />
                         </Button>
-                        <Button 
-                            onClick={handleDownloadReport}
-                            className="bg-cream text-dark hover:bg-white gap-2 font-bold px-6"
-                        >
+                        <Button className="bg-cream text-dark hover:bg-white gap-2 font-bold px-6">
                             <Download className="w-4 h-4" />
                             Download Report
                         </Button>
@@ -158,10 +172,10 @@ export default function InsightsPage() {
                 {/* High Level Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                        { label: 'Avg. Assessment Score', value: '84.2', icon: Brain, trend: '+2.4%', sub: 'vs last month' },
-                        { label: 'Time to Shortlist', value: '3.5d', icon: Zap, trend: '-0.8d', sub: 'efficiency up' },
-                        { label: 'Interview Conversion', value: '24%', icon: TrendingUp, trend: '+5%', sub: 'hiring velocity' },
-                        { label: 'Active Candidates', value: '1,280', icon: Users, trend: '+124', sub: 'pipeline growth' },
+                        { label: 'Avg. Assessment Score', value: stats.avgScore.toString(), icon: Brain, trend: '+2.4%', sub: 'vs last month' },
+                        { label: 'Time to Shortlist', value: stats.timeToShortlist, icon: Zap, trend: '-0.8d', sub: 'efficiency up' },
+                        { label: 'Interview Conversion', value: stats.conversion, icon: TrendingUp, trend: '+5%', sub: 'hiring velocity' },
+                        { label: 'Active Candidates', value: stats.activeCandidates.toLocaleString(), icon: Users, trend: '+124', sub: 'pipeline growth' },
                     ].map((metric, i) => (
                         <Card key={i} className="p-6 border-cream/10 bg-dark/40 hover:border-cream/30 transition-all group overflow-hidden relative">
                             <div className="flex justify-between items-start mb-4 relative z-10">
@@ -173,7 +187,9 @@ export default function InsightsPage() {
                                 </div>
                             </div>
                             <div className="relative z-10">
-                                <div className="text-3xl font-black text-cream mb-1">{metric.value}</div>
+                                <div className="text-3xl font-black text-cream mb-1">
+                                    {loading ? <div className="w-16 h-8 bg-cream/5 animate-pulse rounded" /> : metric.value}
+                                </div>
                                 <div className="text-sm font-semibold text-cream/80">{metric.label}</div>
                                 <div className="text-[10px] text-cream/30 mt-2 italic">{metric.sub}</div>
                             </div>
@@ -333,7 +349,7 @@ export default function InsightsPage() {
                     <div className="lg:col-span-2 space-y-4">
                         <h3 className="text-lg font-bold text-cream flex items-center gap-2">
                             Deep Insights
-                            <div className="px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded text-[8px] text-emerald-500 font-black uppercase">AI Assisted</div>
+                            <div className="px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded text-[8px] text-emerald-500 font-black">AI Assisted</div>
                         </h3>
                         {INSIGHTS.map((insight) => (
                             <div key={insight.id} className="p-4 border border-cream/10 rounded-md bg-cream/5 hover:bg-cream/10 transition-colors group cursor-pointer">

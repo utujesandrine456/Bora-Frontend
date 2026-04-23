@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, useScroll, useTransform, AnimatePresence, Variants } from 'framer-motion';
 import { ArrowRight, Zap, ShieldCheck, BrainCircuit, Send, ChevronDown, ChevronUp, UserCheck, Star } from 'lucide-react';
 import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
+import { motion } from 'framer-motion';
 import Header from '@/components/Header';
 import { profilesApi } from '@/lib/api/profiles';
 
@@ -27,61 +27,66 @@ export default function LandingPage() {
     };
     fetchLiveStats();
   }, []);
-  const scrollYProgress = useScroll().scrollYProgress;
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
-
-  const fadeUp: Variants = {
-    hidden: { opacity: 0, y: 40 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
-  };
-
-  const staggerContainer: Variants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } }
-  };
-
   const patternSvg = `data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 30-30 30L0 30z' fill='none' stroke='%23DAC5A7' stroke-opacity='0.4' stroke-width='1'/%3E%3Cpath d='M30 60L0 30' fill='none' stroke='%23DAC5A7' stroke-opacity='0.4' stroke-width='1'/%3E%3C/svg%3E`;
 
   return (
     <div className="min-h-screen bg-dark text-cream font-medium selection:bg-cream selection:text-dark overflow-x-hidden relative">
-      <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.25]" style={{ backgroundImage: `url("${patternSvg}")`, backgroundSize: '70px' }}></div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 2 }}
+        className="fixed inset-0 z-0 pointer-events-none opacity-[0.25]"
+        style={{ backgroundImage: `url("${patternSvg}")`, backgroundSize: '70px' }}
+      />
 
       <Header />
 
       <main className="relative w-full">
         <section className="relative min-h-screen flex items-center justify-center px-6 overflow-hidden">
-          <motion.div
-            style={{ y }}
-            className="absolute inset-0 z-0 opacity-40 pointer-events-none bg-linear-to-t from-dark via-transparent to-transparent"
-          />
+          <div className="absolute inset-0 z-0 opacity-40 pointer-events-none bg-linear-to-t from-dark via-transparent to-transparent" />
 
           <div className="max-w-7xl mx-auto w-full relative z-10 grid lg:grid-cols-2 gap-20 items-center text-left">
             <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={staggerContainer}
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
               className="flex flex-col items-start"
             >
-              <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl lg:text-[4rem] font-black leading-none mb-8 text-cream">
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.8 }}
+                className="text-5xl md:text-7xl lg:text-[4rem] font-black leading-none mb-8 text-cream"
+              >
                 Where talent <br />
                 <span className="italic font-serif opacity-90">meets true value.</span>
               </motion.h1>
 
-              <motion.p variants={fadeUp} className="text-lg md:text-xl text-cream/70 max-w-xl mb-12 leading-relaxed font-medium">
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.8 }}
+                className="text-lg md:text-xl text-cream/70 max-w-xl mb-12 leading-relaxed font-medium"
+              >
                 The premier AI-powered recruitment engine. Screen, rank, and shortlist candidates with uncompromising precision, keeping humans firmly in control.
               </motion.p>
 
-              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-5">
-                <Link href="/auth/signup" className="bg-cream text-dark px-6 py-4 rounded-md text-md font-semibold hover:bg-white transition-all duration-300 flex items-center justify-center gap-3">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+                className="flex flex-col sm:flex-row gap-5"
+              >
+                <Link href="/auth/signup" className="group bg-cream text-dark px-6 py-4 rounded-md text-md font-semibold hover:bg-white transition-all duration-300 flex items-center justify-center gap-3">
                   Get Started <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </motion.div>
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, x: 50, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 1, ease: "easeOut" }}
               className="relative group hidden lg:block"
             >
               <div className="absolute -inset-1 bg-linear-to-r from-cream/20 to-transparent rounded-lg blur-2xl opacity-30 group-hover:opacity-50 transition duration-1000"></div>
@@ -107,12 +112,10 @@ export default function LandingPage() {
                   <div className="space-y-2">
                     <div className="text-[16px] font-bold text-emerald-500/80">Pipeline Status</div>
                     <div className="h-2 w-full bg-cream/5 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: '84%' }}
-                        transition={{ duration: 2, delay: 1 }}
+                      <div
                         className="h-full bg-cream"
-                      ></motion.div>
+                        style={{ width: '84%' }}
+                      ></div>
                     </div>
                   </div>
 
@@ -149,8 +152,9 @@ export default function LandingPage() {
 
               {/* FLOATING DECORATIONS */}
               <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 }}
                 className="absolute top-6 -right-6 p-4 border border-cream/30 bg-dark rounded-md shadow-xl backdrop-blur-md z-20"
               >
                 <div className="flex items-center gap-3">
@@ -165,8 +169,9 @@ export default function LandingPage() {
               </motion.div>
 
               <motion.div
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1 }}
                 className="absolute -bottom-10 -left-10 p-5 border border-cream/30 bg-dark rounded-md shadow-2xl backdrop-blur-md z-20 max-w-[180px]"
               >
                 <div className="text-[10px] font-bold text-cream/40 mb-2">Efficiency boost</div>
@@ -186,10 +191,17 @@ export default function LandingPage() {
                 { label: 'System Integrations', value: '10+' },
                 { label: 'Unbiased Output', value: '100%' },
               ].map((stat, i) => (
-                <div key={i} className="text-center px-4">
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="text-center px-4"
+                >
                   <div className="text-4xl md:text-5xl font-black text-cream mb-4">{stat.value}</div>
                   <div className="text-lg text-cream/60 font-semibold">{stat.label}</div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -199,10 +211,9 @@ export default function LandingPage() {
         <section id="features" className="py-32 px-6 bg-dark">
           <div className="max-w-7xl mx-auto">
             <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={fadeUp}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
               className="mb-24 flex flex-col md:flex-row md:items-end justify-between border-b border-cream/20 pb-12 gap-6"
             >
               <div>
@@ -214,19 +225,20 @@ export default function LandingPage() {
               </p>
             </motion.div>
 
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={staggerContainer}
-              className="grid md:grid-cols-3 gap-8"
-            >
+            <div className="grid md:grid-cols-3 gap-8">
               {[
                 { icon: Zap, title: "Instant Analysis", desc: "Process thousands of resumes in seconds utilizing Gemini AI context-aware parsing." },
                 { icon: ShieldCheck, title: "Objective AI", desc: "Score candidates rigorously against explicit job parameters, ignoring bias." },
                 { icon: BrainCircuit, title: "Deep Insights", desc: "Granular explanations for every candidate: strengths, weaknesses, parity." }
               ].map((feature, i) => (
-                <motion.div key={i} variants={fadeUp} className="group border border-cream/20 bg-dark p-10 rounded-md hover:bg-cream/5 transition-all duration-500">
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.2 }}
+                  className="group border border-cream/20 bg-dark p-10 rounded-md hover:bg-cream/5 transition-all duration-500"
+                >
                   <div className="mb-10 w-14 h-14 border border-cream/30 rounded-md flex items-center justify-center text-cream group-hover:scale-110 transition-transform duration-500">
                     <feature.icon className="w-6 h-6" strokeWidth={1.5} />
                   </div>
@@ -234,38 +246,34 @@ export default function LandingPage() {
                   <p className="text-cream/60 text-base leading-relaxed">{feature.desc}</p>
                 </motion.div>
               ))}
-            </motion.div>
+            </div>
           </div>
         </section>
+
 
         <section id="workflow" className="py-32 px-6 relative overflow-hidden">
 
           <div className="max-w-7xl mx-auto relative z-10">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeUp}
-              className="text-center mb-20"
-            >
+            <div className="text-center mb-20">
               <h2 className="text-4xl md:text-6xl font-black text-cream">The pipeline</h2>
-            </motion.div>
+            </div>
 
             <div className="grid lg:grid-cols-2 gap-20 items-center">
-              <motion.div
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={staggerContainer}
-                className="space-y-12"
-              >
+              <div className="space-y-12">
                 {[
                   { step: '01', title: 'Data Ingestion', desc: 'Securely import job parameters and structured CVs.' },
                   { step: '02', title: 'Intelligent Parsing', desc: 'Transform messy data into structured Talent Profiles.' },
                   { step: '03', title: 'Gemini Evaluation', desc: 'Run multi-dimensional comparisons for alignment.' },
                   { step: '04', title: 'Rank & Shortlist', desc: 'Generate accurate match scores and present the Top 10.' }
                 ].map((item, i) => (
-                  <motion.div key={i} variants={fadeUp} className="flex gap-8 group">
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    className="flex gap-8 group"
+                  >
                     <div className="text-5xl font-black text-cream/20 transition-all duration-300 group-hover:text-cream">
                       {item.step}
                     </div>
@@ -275,14 +283,9 @@ export default function LandingPage() {
                     </div>
                   </motion.div>
                 ))}
-              </motion.div>
+              </div>
 
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                viewport={{ once: true }}
-              >
+              <div>
                 <div className="border border-cream/30 bg-dark p-6 rounded-md lg:p-10 relative shadow-2xl">
                   {/* Decorative Elements */}
                   <div className="absolute -top-3 -left-3 w-6 h-6 border-t-2 border-l-2 border-cream rounded-tl-sm"></div>
@@ -309,7 +312,7 @@ export default function LandingPage() {
                     ))}
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         </section>
@@ -317,24 +320,12 @@ export default function LandingPage() {
         {/* FAQ SECTION */}
         <section id="faq" className="py-24 px-6 bg-dark border-t border-cream/20">
           <div className="max-w-4xl mx-auto">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeUp}
-              className="text-center mb-16"
-            >
+            <div className="text-center mb-16">
               <h2 className="text-4xl font-black text-cream mb-4">FAQ</h2>
               <p className="text-cream/60">Frequently asked questions about the BORA platform.</p>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={staggerContainer}
-              className="space-y-4"
-            >
+            <div className="space-y-4">
               {[
                 { q: "How does the AI matching work?", a: "We utilize multi-dimensional Gemini AI prompts designed specifically to compare Applicant CV unstructured data directly against the stated Job Description requirements, producing a 0-100 unbiased score." },
                 { q: "Is the data secure?", a: "Yes. All resumes and job parameters are securely stored. We respect privacy boundaries and do not train foundational models on your candidate CVs." },
@@ -342,20 +333,14 @@ export default function LandingPage() {
               ].map((faq, i) => (
                 <FAQItem key={i} question={faq.q} answer={faq.a} />
               ))}
-            </motion.div>
+            </div>
           </div>
         </section>
 
         {/* CTA SECTION */}
         <section className="py-32 px-6 bg-dark border-t border-cream/20 relative overflow-hidden">
           <div className="absolute inset-0 z-0 opacity-5 pointer-events-none" style={{ backgroundImage: `url("${patternSvg}")`, backgroundSize: '40px' }}></div>
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-            className="max-w-4xl mx-auto text-center relative z-10"
-          >
+          <div className="max-w-4xl mx-auto text-center relative z-10">
             <h2 className="text-4xl md:text-7xl font-black text-cream mb-8 leading-none">
               Deploy intelligence.
             </h2>
@@ -363,7 +348,7 @@ export default function LandingPage() {
             <Link href="/dashboard" className="inline-flex items-center justify-center gap-4 bg-cream text-dark px-6 py-4 rounded-md text-md font-semibold hover:bg-white transition-colors">
               Get Started <ArrowRight className="w-5 h-5" />
             </Link>
-          </motion.div>
+          </div>
         </section>
       </main>
 
@@ -467,7 +452,12 @@ function FAQItem({ question, answer }: { question: string, answer: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }} className="border border-cream/20 bg-dark rounded-md overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="border border-cream/20 bg-dark rounded-md overflow-hidden"
+    >
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between p-5 text-left font-bold text-cream hover:bg-cream/5 transition-colors focus:outline-none"
@@ -475,20 +465,16 @@ function FAQItem({ question, answer }: { question: string, answer: string }) {
         <span>{question}</span>
         <ChevronDown className={`w-5 h-5 text-cream/50 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="p-5 pt-0 text-cream/60 text-sm leading-relaxed border-t border-cream/10 border-dashed mx-5">
-              {answer}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <motion.div
+        initial={false}
+        animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="overflow-hidden"
+      >
+        <div className="p-5 pt-0 text-cream/60 text-sm leading-relaxed border-t border-cream/10 border-dashed mx-5">
+          {answer}
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

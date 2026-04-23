@@ -16,12 +16,9 @@ import Link from 'next/link';
 import TopNav from '@/components/TopNav';
 import Card, { fadeUp, staggerContainer } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
-import { motion } from 'framer-motion';
 import Button from '@/components/ui/Button';
 import { jobsApi } from '@/lib/api/jobs';
 import { profilesApi } from '@/lib/api/profiles';
-import { downloadAsFile, jsonToCsv } from '@/lib/utils/download';
-import toast from 'react-hot-toast';
 import { Job } from '@/lib/api/types';
 import { TalentProfile } from '@/lib/types/profile';
 
@@ -45,6 +42,11 @@ export default function Dashboard() {
         const activeJobs = jobs.filter((j: Job) => j.status !== 'closed' && j.status !== 'archived').length;
         const totalApplicants = profilesResponse.total || 0;
 
+        // Calculate Screening Progress
+        const profilesWithScores = profilesResponse.data.filter((p: any) => p.matchScore && p.matchScore > 0).length;
+        const totalProfiles = profilesResponse.total || 0;
+        const screeningProgress = totalProfiles > 0 ? Math.round((profilesWithScores / totalProfiles) * 100) : 0;
+
         setStats([
           {
             label: 'Total Applicants',
@@ -63,21 +65,22 @@ export default function Dashboard() {
             color: 'text-emerald-500'
           },
           {
-            label: 'Screening Tasks',
-            value: (activeJobs * 3).toString(), // Mocked derivation
-            change: '-2',
-            trend: 'down',
+            label: 'Screening Progress',
+            value: `${screeningProgress}%`,
+            change: '+12%',
+            trend: 'up',
             icon: ClipboardCheck,
             color: 'text-amber-500'
           }
         ]);
 
-        // Map Recent Applicants
+
+
         const mappedApplicants = (profilesResponse.data || []).slice(0, 3).map((p: TalentProfile) => ({
-          id: p._id,
+          id: p._id || '',
           name: `${p.firstName} ${p.lastName}`,
           role: p.headline || 'Applicant',
-          match: p.matchScore || 85, // Fallback if not screened
+          match: p.matchScore || 85,
           status: p.matchScore && p.matchScore >= 90 ? 'High Match' : 'In Review',
           avatar: `${p.firstName?.[0] || ''}${p.lastName?.[0] || ''}` || '?'
         }));
@@ -93,40 +96,13 @@ export default function Dashboard() {
     fetchDashboardData();
   }, []);
 
-  const handleDownloadReport = () => {
-    if (!stats || stats.length === 0) return;
-
-    const exportData = stats.map(s => ({
-      Metric: s.label,
-      Value: s.value,
-      Trend: s.trend,
-      Change: s.change
-    }));
-
-    const csvContent = jsonToCsv(exportData);
-    downloadAsFile(`workspace_summary_${new Date().toISOString().split('T')[0]}.csv`, csvContent, 'text/csv');
-    toast.success('Workspace summary report downloaded');
-  };
-
-  if (loading) {
-     return (
-      <div className="flex flex-col h-full bg-dark min-h-screen items-center justify-center">
-        <div className="w-12 h-12 border-4 border-cream border-t-transparent rounded-full animate-spin opacity-20"></div>
-        <p className="text-cream/40 font-bold tracking-widest text-sm uppercase mt-4">Loading Workspace...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col h-full bg-dark min-h-screen">
       <TopNav />
 
       <div className="flex-1 p-8 max-w-7xl mx-auto w-full space-y-12 pb-32">
-        {/* Header Section */}
-        <motion.div
-          variants={fadeUp}
-          initial="initial"
-          animate="animate"
+        <div
           className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-4 border-b border-cream/10 pb-12"
         >
           <div className="flex-1">
@@ -143,23 +119,14 @@ export default function Dashboard() {
                 <span className="text-sm font-bold">AI Engine Active</span>
               </div>
             </div>
-            <Link href="/jobs">
-              <Button variant="primary" className="py-4 px-8 bg-cream text-dark">
-                Post New Job
-              </Button>
-            </Link>
           </div>
-        </motion.div>
+        </div>
 
-        {/* Stats Grid */}
-        <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
+        <div
           className="grid grid-cols-1 md:grid-cols-3 gap-6"
         >
           {stats.map((stat, i: number) => (
-            <motion.div key={i} variants={fadeUp}>
+            <div key={i}>
               <Card variant="glass" className="p-8 relative group overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                   <stat.icon className="w-24 h-24 -mr-8 -mt-8" />
@@ -187,17 +154,14 @@ export default function Dashboard() {
                   )}
                 </div>
               </Card>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
 
         {/* Tables/Lists Section */}
         <div className="grid lg:grid-cols-3 gap-12 pt-4">
           {/* Main Activity */}
-          <motion.div
-            variants={fadeUp}
-            initial="initial"
-            animate="animate"
+          <div
             className="lg:col-span-2 space-y-8"
           >
             <div className="flex items-center justify-between">
@@ -248,13 +212,10 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
 
           {/* Side Panel: System Insights */}
-          <motion.div
-            variants={fadeUp}
-            initial="initial"
-            animate="animate"
+          <div
             className="space-y-8"
           >
             <h2 className="text-2xl font-black text-cream">Live insights</h2>
@@ -285,24 +246,17 @@ export default function Dashboard() {
                     <span className="text-xs font-black text-cream">94.8%</span>
                   </div>
                   <div className="h-2 w-full bg-cream/10 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: '94.8%' }}
-                      transition={{ duration: 1.5, ease: "easeOut" }}
+                    <div
                       className="h-full bg-cream blur-[0.5px]"
+                      style={{ width: '94.8%' }}
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-cream/10">
-                <button 
-                  onClick={handleDownloadReport}
-                  className="w-full py-3 bg-cream text-dark font-semibold text-sm rounded-md hover:bg-white transition-all shadow-xl"
-                >
-                  Download Report
-                </button>
-              </div>
+              <Button variant="primary" className="w-full mt-8 py-4 bg-cream text-dark hover:bg-cream/60 hover:text-dark text-sm font-semibold transition-all">
+                Generate report
+              </Button>
             </Card>
 
             <Card variant="glass" className="p-8 bg-cream/5 border-cream/10">
@@ -315,7 +269,7 @@ export default function Dashboard() {
                 <button className="cursor-pointer w-full py-3 px-4 bg-cream/50 border border-cream/5 rounded text-left text-[12px] font-bold text-dark hover:text-dark hover:border-cream/20 transition-all">Invite Team Members</button>
               </div>
             </Card>
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>

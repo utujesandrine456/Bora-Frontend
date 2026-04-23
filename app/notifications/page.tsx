@@ -98,7 +98,7 @@ export default function NotificationsPage() {
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-cream/10 pb-8">
                     <div>
                         <div className="flex items-center gap-4 mb-2">
-                            <h1 className="text-5xl font-black text-cream tracking-tight">Notifications</h1>
+                            <h1 className="text-5xl font-black text-cream ">Notifications</h1>
                             {unreadCount > 0 && (
                                 <div className="bg-cream text-dark px-3 mt-2 py-0.5 rounded-full text-sm font-bold">
                                     {unreadCount} New
@@ -171,7 +171,7 @@ export default function NotificationsPage() {
                     {notifications.length === 0 && (
                         <div className="py-20 text-center space-y-4 border border-dashed border-cream/10 rounded-md">
                             <Bell className="w-12 h-12 text-cream/10 mx-auto" />
-                            <p className="text-cream/40 font-bold tracking-wider">You&apos;re all caught up!</p>
+                            <p className="text-cream/40 font-bold ">You&apos;re all caught up!</p>
                         </div>
                     )}
                 </div>

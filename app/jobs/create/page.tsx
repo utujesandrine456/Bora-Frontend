@@ -186,7 +186,7 @@ export default function CreateJobPage() {
             {/* Sidebar (Settings/Publish) */}
             <div className="space-y-10">
               <Card padding="lg">
-                <h2 className="text-[24px] font-black text-cream uppercase mb-8 flex items-center gap-3">
+                <h2 className="text-[24px] font-black text-cream mb-8 flex items-center gap-3">
                   <div className="w-2 h-8 bg-cream"></div>
                   Role Criteria
                 </h2>

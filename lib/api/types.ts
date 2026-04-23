@@ -64,6 +64,8 @@ export interface Job {
   posted?: string;
   salary?: string;
   match?: number;
+  applicants?: number;
+  applicantsCount?: number;
   createdAt?: string;
   updatedAt?: string;
 }

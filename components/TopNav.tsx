@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Bell } from 'lucide-react';
 import Link from 'next/link';
+<<<<<<< HEAD
 
 export default function TopNav() {
   const [user, setUser] = useState<{ name: string; role: string; photo?: string } | null>(null);
@@ -58,6 +59,42 @@ export default function TopNav() {
 
   const displayName = user?.name || 'User';
   const displayRole = user?.role || 'Guest';
+=======
+import { useState, useEffect } from 'react';
+import { authApi } from '@/lib/api/auth';
+
+export default function TopNav() {
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
+
+  useEffect(() => {
+    // 1. Initial load from localStorage for fast initial paint
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (_e) { /* ignore */ }
+    }
+
+    const fetchUser = async () => {
+      try {
+        const res = await authApi.getMe();
+        const freshUser = res.user || res; // Handle both wrapped and unwrapped response
+        if (freshUser) {
+          setUser(freshUser);
+          localStorage.setItem('user', JSON.stringify(freshUser));
+        }
+      } catch (error) {
+        console.warn('TopNav: Failed to fetch fresh user data from /auth/me:', error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const initials = user?.name
+    ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+    : '??';
+>>>>>>> ff9f51be1fc4b1ba5da7128962c8900a9e0c0f68
 
   return (
     <>
@@ -81,8 +118,13 @@ export default function TopNav() {
 
           <div className="flex items-center gap-6 pl-8 border-l border-cream/10">
             <div className="flex flex-col items-end">
+<<<<<<< HEAD
               <span className="text-sm font-bold text-cream underline decoration-cream/20 underline-offset-4">{displayName}</span>
               <span className="text-xs text-cream/60 font-medium uppercase tracking-widest">{displayRole}</span>
+=======
+              <span className="text-sm font-semibold text-cream ">{user?.name || (user ? 'Authenticating...' : 'Loading...')}</span>
+              <span className="text-[12px] text-cream/40 font-medium">{user?.role || 'User'}</span>
+>>>>>>> ff9f51be1fc4b1ba5da7128962c8900a9e0c0f68
             </div>
             <div className="flex items-center gap-2 cursor-pointer group">
               <div className="w-10 h-10 bg-cream/10 flex items-center justify-center rounded-md overflow-hidden border border-cream/20 group-hover:border-cream/50 transition-all shadow-lg active:scale-95 group">

@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -18,13 +18,13 @@ export default function Header() {
 
     return (
         <motion.nav
-            initial={false}
-            animate={{
-                backgroundColor: isScrolled ? "rgba(0,0,0,0.85)" : "rgba(0,0,0,0.6)",
-                borderColor: isScrolled ? "rgba(218,197,167,0.1)" : "rgba(218,197,167,0.2)",
-            }}
-            transition={{ duration: 0.3 }}
-            className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-[80%] max-w-7xl h-20 backdrop-blur-xl border border-cream/10 rounded-md shadow-2xl transition-all overflow-hidden"
+            initial={{ y: -100, x: "-50%", opacity: 0 }}
+            animate={{ y: 0, x: "-50%", opacity: 1 }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className={`fixed top-5 left-1/2 z-50 w-[80%] max-w-7xl h-20 backdrop-blur-xl border rounded-md shadow-2xl transition-all duration-300 overflow-hidden ${isScrolled
+                ? "bg-black/85 border-cream/10"
+                : "bg-black/60 border-cream/20"
+                }`}
         >
             <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-3 group">
