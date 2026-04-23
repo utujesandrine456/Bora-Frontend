@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     History,
     Search,
@@ -21,12 +21,9 @@ import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Link from 'next/link';
-import { useEffect } from 'react';
 import { jobsApi } from '@/lib/api/jobs';
-import { profilesApi } from '@/lib/api/profiles';
+import { analyticsApi } from '@/lib/api/analytics';
 import toast from 'react-hot-toast';
-
-// Mock Data fallback removed
 
 
 export default function ScreeningHistoryPage() {
@@ -52,27 +49,34 @@ export default function ScreeningHistoryPage() {
                     return;
                 }
 
-                // Fetch details for each job
+                // Fetch details for each job using the analytics API
                 const extendedHistory = await Promise.all(jobs.map(async (job) => {
-                    const profilesRes = await profilesApi.getProfiles({ jobId: job._id, limit: 100 });
-                    const scores = profilesRes.data.map((p: any) => p.matchScore || 0).filter((s: number) => s > 0);
-                    const avgScore = scores.length > 0 ? Math.round(scores.reduce((a: number, b: number) => a + b, 0) / scores.length) : 0;
+                    try {
+                        const analytics = await analyticsApi.getJobAnalytics(job._id || job.id || '');
 
-                    // Find top candidate
-                    const topCandidate = profilesRes.data.length > 0
-                        ? profilesRes.data.reduce((prev: any, curr: any) => ((prev.matchScore || 0) > (curr.matchScore || 0)) ? prev : curr)
-                        : null;
-
-                    return {
-                        id: job._id,
-                        role: job.title,
-                        date: job.updatedAt || job.createdAt,
-                        candidates: profilesRes.total || 0,
-                        avgScore: avgScore,
-                        topMatch: topCandidate ? `${topCandidate.firstName} ${topCandidate.lastName}` : 'No Match',
-                        status: job.status === 'closed' ? 'Archived' : 'Completed',
-                        matchQuality: avgScore >= 80 ? 'High' : avgScore >= 60 ? 'Medium' : 'Low'
-                    };
+                        return {
+                            id: job._id || job.id,
+                            role: job.title,
+                            date: job.updatedAt || job.createdAt,
+                            candidates: analytics.totalCandidates || 0,
+                            avgScore: Math.round(analytics.averageScore || 0),
+                            topMatch: analytics.topCandidate ? `${analytics.topCandidate.firstName} ${analytics.topCandidate.lastName}` : 'No Match',
+                            status: job.status === 'closed' ? 'Archived' : 'Completed',
+                            matchQuality: (analytics.averageScore || 0) >= 80 ? 'High' : (analytics.averageScore || 0) >= 60 ? 'Medium' : 'Low'
+                        };
+                    } catch (error) {
+                        console.warn(`Analytics failed for job ${job._id}:`, error);
+                        return {
+                            id: job._id || job.id,
+                            role: job.title,
+                            date: job.updatedAt || job.createdAt,
+                            candidates: 0,
+                            avgScore: 0,
+                            topMatch: 'No Data',
+                            status: job.status === 'closed' ? 'Archived' : 'Completed',
+                            matchQuality: 'Low'
+                        };
+                    }
                 }));
 
                 setHistory(extendedHistory);
@@ -131,10 +135,10 @@ export default function ScreeningHistoryPage() {
                 {/* Global Summary Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                        { label: 'Total Assessments', value: stats.totalAssessments.toString(), icon: History, trend: '+12%', sub: 'since last month' },
-                        { label: 'Avg. Match Quality', value: `${stats.avgMatchQuality}%`, icon: Trophy, trend: 'Stable', sub: 'overall quality' },
-                        { label: 'Avg. Candidates / Role', value: stats.avgCandidates.toString(), icon: CheckCircle2, trend: '+4.2', sub: 'pipeline volume' },
-                        { label: 'Screening Efficiency', value: `${stats.efficiency}%`, icon: BarChart3, trend: '+5%', sub: 'automation rate' },
+                        { label: 'Total Assessments', value: stats.totalAssessments.toString(), icon: History, trend: 'Total', sub: 'overall volume' },
+                        { label: 'Avg. Match Quality', value: `${stats.avgMatchQuality}%`, icon: Trophy, trend: 'Avg.', sub: 'overall quality' },
+                        { label: 'Avg. Candidates / Role', value: stats.avgCandidates.toString(), icon: CheckCircle2, trend: 'Avg.', sub: 'pipeline volume' },
+                        { label: 'Screening Efficiency', value: `${stats.efficiency}%`, icon: BarChart3, trend: 'Rate', sub: 'automation rate' },
                     ].map((metric, i) => (
                         <Card key={i} className="p-6 border-cream/10 bg-dark/40 hover:border-cream/30 transition-all group relative overflow-hidden">
                             <div className="flex justify-between items-start mb-4 relative z-10">
@@ -293,7 +297,7 @@ export default function ScreeningHistoryPage() {
                     {/* Pagination Mockup */}
                     <div className="px-6 py-4 border-t border-cream/10 flex items-center justify-between bg-cream/5">
                         <div className="text-[11px] text-cream/40 font-bold">
-                            Showing <span className="text-cream">1-6</span> of 142 assessments
+                            Showing <span className="text-cream">{filteredHistory.length > 0 ? 1 : 0}-{filteredHistory.length}</span> of {history.length} assessments
                         </div>
                         <div className="flex items-center gap-2">
                             <Button variant="secondary" className="px-3 py-1.5 text-xs border-cream/10 text-cream/40 cursor-not-allowed">

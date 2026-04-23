@@ -2,7 +2,6 @@ import { apiClient } from './client';
 import { ProfileInput, BulkProfileInput } from './types';
 import { TalentProfile } from '../types/profile';
 
-// Extending standard interface for pagination metadata since list is paginated
 export interface PaginatedProfiles {
   data: TalentProfile[];
   total: number;
@@ -33,7 +32,6 @@ export const profilesApi = {
     } catch (error: any) {
       if (error.response?.status === 404) {
         console.warn(`Direct profile fetch failed for ${id}. Trying list fallback...`);
-        // Fallback: try filtering the list by ID (some backends allow this)
         const response = await apiClient.get<PaginatedProfiles>('/v1/profiles', {
           params: { id, limit: 1 }
         });
