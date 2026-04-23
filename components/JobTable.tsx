@@ -28,6 +28,7 @@ export default function JobTable() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [screeningJob, setScreeningJob] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const pendingJobIdRef = React.useRef<string | null>(null);
 
@@ -43,11 +44,11 @@ export default function JobTable() {
       toast.success('Applicants imported successfully!', { id });
       fetchJobs();
     } catch (error: unknown) {
-      const axiosError = error as any;
-      const serverMsg = axiosError?.response?.data?.message || axiosError?.response?.data?.error;
-      const msg = serverMsg || (error instanceof Error ? error.message : 'Import failed');
+      const msg = error instanceof Error ? error.message : 'Import failed';
       toast.error(`Upload failed: ${msg}`, { id });
-      console.error('CSV Upload Error:', axiosError?.response?.data || error);
+
+      console.warn('CSV Upload Extracted Error:', msg);
+      console.warn('Server Upload Raw Error:', error);
     } finally {
       setUploading(null);
       pendingJobIdRef.current = null;
@@ -57,7 +58,6 @@ export default function JobTable() {
 
   const triggerUpload = (jobId: string) => {
     pendingJobIdRef.current = jobId;
-    // Reset before clicking so change event fires even for same file
     if (fileInputRef.current) fileInputRef.current.value = '';
     fileInputRef.current?.click();
   };
@@ -70,25 +70,25 @@ export default function JobTable() {
         profilesApi.getProfiles({ limit: 1000 })
       ]);
 
-      console.log('JobTable: RAW FETCH:', data);
-
       const rawArray: Job[] = Array.isArray(data) ? data : [];
 
-      // Calculate real applicant counts from profiles
-      const applicantCounts: Record<string, number> = {};
-      profilesRes.data.forEach((p: TalentProfile) => {
+
+      const applicantCounts: Record<string, number> = {}; profilesRes.data.forEach((p: TalentProfile) => {
         const jId = p.jobId;
         if (jId) {
           applicantCounts[jId] = (applicantCounts[jId] || 0) + 1;
         }
       });
 
-      console.log(`JobTable: Received ${rawArray.length} items from backend`);
+<<<<<<< HEAD
+      console.log(`JobTable: Received ${rawArray.length} items (API + local)`);
 
       // Fallback mapper for properties missing from base Job schema
+      const mappedJobs = rawArray.map((job: any) => {
+=======
       const mappedJobs = rawArray.map((job: Job) => {
+>>>>>>> 29c8c39e792e7a2abe85806ea10af2daf7389655
         const jobId = job._id || job.id;
-        // Handle varied status strings: 'open' | 'active' | 'draft' | 'published'
         const rawStatus = job.status || 'open';
         let displayStatus = 'Open';
 
@@ -103,10 +103,16 @@ export default function JobTable() {
           location: job.location || 'Remote',
           posted: job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Recently',
           createdAt: job.createdAt || new Date().toISOString(),
+<<<<<<< HEAD
+          applicants: applicantCounts[jobId] || job.applicantsCount || 0,
+          status: displayStatus,
+          _isLocal: job._isLocal || false, // Keep support for local sync flag
+=======
           applicants: applicantCounts[jobId as string] || job.applicantsCount || 0,
           status: displayStatus,
           company: job.company || 'BORA',
           description: job.description || ''
+>>>>>>> ff9f51be1fc4b1ba5da7128962c8900a9e0c0f68
         };
       });
 
@@ -132,16 +138,32 @@ export default function JobTable() {
   const handleScreen = async (jobId: string) => {
     if (!jobId) return;
 
-    const id = toast.loading('Initiating AI analysis...');
+    setScreeningJob(jobId);
+    const id = toast.loading('Initiating AI analysis for all candidates...');
+
+    // 50-second timeout guard to prevent infinite hanging
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Screening request timed out. The analysis may still be processing in the background.')), 50000)
+    );
+
     try {
-      await screeningApi.triggerScreening(jobId);
-      toast.success('Analysis initiated! Redirecting to results...', { id });
+      await Promise.race([
+        screeningApi.triggerScreening(jobId),
+        timeoutPromise
+      ]);
+
+      toast.success('Analysis complete! Opening ranking dashboard...', { id });
+
+      // Delay redirection slightly to allow DB state to stabilize
       setTimeout(() => {
-        router.push('/screening');
-      }, 1500);
+        router.push(`/screening/results?jobId=${jobId}`);
+      }, 2000);
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Failed to start analysis';
+      console.error('JobTable: Screening failed:', msg);
       toast.error(msg, { id });
+    } finally {
+      setScreeningJob(null);
     }
   };
 
@@ -326,6 +348,46 @@ export default function JobTable() {
                 </tr>
               ))
             ) : filteredJobs.length > 0 ? filteredJobs.map((job) => (
+<<<<<<< HEAD
+              <tr key={job.id} className="hover:bg-cream/5 transition-colors group cursor-pointer">
+                <td className="px-8 py-6">
+                  <Link href={`/jobs/${job.id}`} className="flex items-center gap-4">
+                    <div>
+                      <div className="font-bold tracking-wider text-cream text-[15px] mb-1 group-hover:text-white transition-colors flex items-center gap-2">
+                        {job.title}
+                        {job._isLocal && (
+                          <span className="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/20 animate-pulse">
+                            SYNCING
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[14px] font-medium text-cream/40">ID: {String(job.id).slice(-6).toUpperCase()}</div>
+                    </div>
+                  </Link>
+                </td>
+                <td className="px-8 py-6">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-1.5 text-cream/70 font-medium text-sm">
+                      <MapPin className="h-4 w-4 text-cream/40" />
+                      <span>{job.location}</span>
+                    </div>
+                    <div className="text-[10px] font-black text-cream flex items-center gap-1.5">
+                      <div className="w-1 h-1 rounded-full bg-cream"></div>
+                      {job.type}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-8 py-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex -space-x-3">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="w-9 h-9 rounded-md border border-dark bg-cream/20 flex items-center justify-center overflow-hidden">
+                          <div className="w-full h-full bg-cream/10"></div>
+                        </div>
+                      ))}
+                      <div className="w-9 h-9 rounded-md border border-cream bg-dark flex items-center justify-center text-[11px] font-black text-cream">
+                        +{job.applicants > 3 ? job.applicants - 3 : 0}
+=======
               <React.Fragment key={job.id}>
                 <tr
                   onClick={() => setSelectedJobId(selectedJobId === job.id ? null : (job.id as string))}
@@ -336,6 +398,7 @@ export default function JobTable() {
                       <div>
                         <div className="font-bold text-cream text-[15px] mb-1 group-hover:text-white transition-colors">{job.title}</div>
                         <div className="text-[14px] font-medium text-cream/40">ID: {String(job.id).slice(-6).toUpperCase()}</div>
+>>>>>>> ff9f51be1fc4b1ba5da7128962c8900a9e0c0f68
                       </div>
                     </div>
                   </td>
@@ -359,8 +422,8 @@ export default function JobTable() {
                             <div className="w-full h-full bg-cream/10"></div>
                           </div>
                         ))}
-                        <div className="w-9 h-9 rounded-md border border-cream bg-dark flex items-center justify-center text-[11px] font-black text-cream">
-                          +{(job.applicants || 0) > 3 ? (job.applicants as number) - 3 : 0}
+                        <div className="w-9 h-9 rounded-md border border-cream bg-dark flex items-center justify-center text-[12px] font-bold text-cream">
+                          +{(job.applicants || 0)}
                         </div>
                       </div>
                     </div>
@@ -381,11 +444,15 @@ export default function JobTable() {
                       <Button
                         variant="primary"
                         size="sm"
-                        onClick={() => handleScreen(job.id as string)}
+                        disabled={screeningJob === (job.id as string)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleScreen(job.id as string);
+                        }}
                         className="px-4 py-2 text-xs font-black shadow-none transition-all group-hover:shadow-xl group-hover:shadow-cream/5"
                       >
-                        <Zap className="h-3.5 w-3.5" />
-                        Actions
+                        <Zap className={`h-3.5 w-3.5 ${screeningJob === (job.id as string) ? 'animate-pulse text-emerald-400' : ''}`} />
+                        {screeningJob === (job.id as string) ? 'Screening...' : 'Screen Candidates'}
                       </Button>
                       <div className="relative">
                         <button
@@ -471,8 +538,14 @@ export default function JobTable() {
                           >
                             {uploading === job.id ? 'Importing...' : 'Import CSV / Excel'}
                           </Button>
-                          <Button variant="primary" size="sm" className="bg-emerald-500 text-dark font-black hover:bg-emerald-400 border-none transition-all" onClick={() => handleScreen(job.id as string)}>
-                            Screen Candidates
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            disabled={screeningJob === (job.id as string)}
+                            className="bg-emerald-500 text-dark font-black hover:bg-emerald-400 border-none transition-all"
+                            onClick={() => handleScreen(job.id as string)}
+                          >
+                            {screeningJob === (job.id as string) ? 'Screening candidates...' : 'Screen Candidates'}
                           </Button>
                         </div>
                       </div>

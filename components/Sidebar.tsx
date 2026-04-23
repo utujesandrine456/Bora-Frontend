@@ -15,7 +15,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api/auth';
 
-
 interface MenuItem {
   name: string;
   icon: LucideIcon;
@@ -31,37 +30,49 @@ const adminMenuItems: MenuItem[] = [
   { name: 'Settings', icon: Settings, href: '/settings' },
 ];
 
-
-
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [role, setRole] = React.useState<string>('admin');
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        try {
-          const parsed = JSON.parse(storedUser);
-          setRole(parsed.role?.toLowerCase() || 'admin');
-        } catch (_e) {
-          // ignore
-        }
-      }
-    }
-  }, []);
-
-  const handleLogout = async () => {
-    await authApi.logout(); // clears localStorage + redirects internally
-  };
+  const [user, setUser] = React.useState<{
+    name: string;
+    role: string;
+    photo?: string;
+  } | null>(null);
 
   const appRoutes = [
-    '/dashboard', '/jobs', '/applicants', '/screening', '/insights', '/settings', '/screening-history', '/notifications'
+    '/dashboard',
+    '/jobs',
+    '/applicants',
+    '/screening',
+    '/settings',
+    '/screening-history',
+    '/notifications'
   ];
-  const isAppRoute = appRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
+
+  const isAppRoute = appRoutes.some(
+    route => pathname === route || pathname.startsWith(route + '/')
+  );
 
   useEffect(() => {
+    const loadUser = () => {
+      if (typeof window !== 'undefined') {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            const parsed = JSON.parse(storedUser);
+            setUser({
+              ...parsed,
+              id: parsed.id || parsed._id
+            });
+          } catch {}
+        }
+      }
+    };
+
+    loadUser();
+    window.addEventListener('user-updated', loadUser);
+
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('token');
       const isAuthPage = pathname.startsWith('/auth/');
@@ -69,57 +80,105 @@ export default function Sidebar() {
       if (!token && isAppRoute) {
         router.push('/auth/login');
       } else if (token && isAuthPage) {
-        router.push('/dashboard');
+        const storedUser = localStorage.getItem('user');
+        const role = storedUser
+          ? JSON.parse(storedUser).role?.toLowerCase()
+          : 'admin';
+
+        router.push(
+          role === 'candidate'
+            ? '/candidate/dashboard'
+            : '/dashboard'
+        );
       }
     }
-  }, [isAppRoute, pathname, router, role]);
+
+    return () => {
+      window.removeEventListener('user-updated', loadUser);
+    };
+  }, [isAppRoute, pathname, router]);
+
+  const role = user?.role?.toLowerCase() || 'admin';
+  const displayName = user?.name || 'User';
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   if (!isAppRoute) return null;
 
-  const menuItems = adminMenuItems;
-
   return (
-    <div className="w-[280px] min-h-screen h-full bg-dark flex flex-col p-6 border-r border-cream/20 sticky top-0">
+    <div className="w-[280px] min-h-screen bg-dark flex flex-col p-6 border-r border-cream/20 sticky top-0">
+      
+      {/* Logo */}
       <div className="mb-10 flex items-center gap-3 px-2">
-        <div className="w-10 h-10 border-2 border-cream bg-dark rounded-full flex items-center justify-center transition-transform hover:rotate-12 duration-500 overflow-hidden">
-          <img src="/logo.png" alt="BORA Logo" className="w-full h-full object-cover" />
+        <div className="w-10 h-10 border-2 border-cream bg-dark rounded-full flex items-center justify-center overflow-hidden">
+          {user?.photo ? (
+            <img src={user.photo} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-cream text-[8px] font-black">BORA</span>
+          )}
         </div>
-        <div>
-          <h1 className="text-2xl font-black text-cream leading-none">BORA</h1>
-        </div>
+        <h1 className="text-2xl font-black text-cream">BORA</h1>
       </div>
 
+      {/* Menu */}
       <nav className="flex-1 space-y-2">
-        {menuItems.map((item) => {
+        {adminMenuItems.map((item) => {
           const isActive =
             pathname === item.href ||
             (item.name === 'Jobs' && (pathname === '/' || pathname === '/jobs')) ||
-            (item.name === 'Screening Results' && (pathname === '/screening' || pathname.startsWith('/screening/results')));
+            (item.name === 'Screening Results' &&
+              (pathname === '/screening' ||
+                pathname.startsWith('/screening/results')));
+
           const Icon = item.icon;
 
           return (
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center gap-3 px-5 py-3.5 rounded-md transition-all duration-300 group cursor-pointer ${isActive
-                ? 'bg-cream text-dark font-bold'
-                : 'text-cream/60 hover:bg-cream/10 hover:text-cream'
-                }`}
+              className={`flex items-center gap-3 px-5 py-3 rounded-md ${
+                isActive
+                  ? 'bg-cream text-dark font-bold'
+                  : 'text-cream/60 hover:bg-cream/10'
+              }`}
             >
-              <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-dark' : 'text-cream/40 group-hover:text-cream'}`} />
-              <span className={`text-[15px] ${isActive ? 'font-bold text-lg' : 'font-medium text-md'}`}>{item.name}</span>
+              <Icon className="w-5 h-5" />
+              {item.name}
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto pt-6 border-t border-cream/20">
+      {/* Profile */}
+      <div className="mt-auto pt-6 border-t border-cream/10">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded bg-cream/10 flex items-center justify-center">
+            {user?.photo ? (
+              <img src={user.photo} className="w-full h-full object-cover" />
+            ) : (
+              <span>{getInitials(displayName)}</span>
+            )}
+          </div>
+          <div>
+            <div className="text-sm text-cream">{displayName}</div>
+            <div className="text-xs text-cream/40">{role}</div>
+          </div>
+        </div>
+
         <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-5 py-3.5 rounded-md bg-cream text-dark hover:bg-cream hover:text-dark/80 transition-all w-full group cursor-pointer text-md font-semibold"
+          onClick={async () => await authApi.logout()}
+          className="w-full flex items-center gap-2 px-4 py-3 bg-cream text-dark rounded"
         >
-          <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform opacity-70" />
-          <span>Logout</span>
+          <LogOut className="w-4 h-4" />
+          Logout
         </button>
       </div>
     </div>
