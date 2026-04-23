@@ -36,6 +36,15 @@ export interface LoginResponse {
   };
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  password?: string;
+}
+
 export interface User {
   id: string;
   name: string;
