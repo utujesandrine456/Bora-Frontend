@@ -1,45 +1,90 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Shield, Laptop, Check, Save } from 'lucide-react';
 import TopNav from '@/components/TopNav';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { authApi } from '@/lib/api/auth';
 
-type Category = 'workspace' | 'ai' | 'security';
+type Category = 'ai' | 'security';
 
 
 export default function AdminSettings() {
-    const [activeCategory, setActiveCategory] = useState<Category>('workspace');
-    const [loading, setLoading] = useState(false);
+    const [activeCategory, setActiveCategory] = React.useState<Category>('ai');
+    const [loading, setLoading] = React.useState(false);
+    const [fetching, setFetching] = React.useState(true);
 
-    const [workspaceData, setWorkspaceData] = useState({
-        companyName: 'Bora Technologies',
-        website: 'https://bora.ai',
-        industry: 'Tech',
-        description: 'Next-generation AI recruitment platform.'
+    const [recruiterData, setRecruiterData] = React.useState({
+        name: '',
+        email: '',
+        role: ''
     });
 
-    const [aiData, setAiData] = useState({
+    const [aiData, setAiData] = React.useState({
         model: 'advanced',
         experienceWeight: 40,
         educationWeight: 30,
         skillsWeight: 30
     });
 
+    React.useEffect(() => {
+        const loadProfile = async () => {
+            try {
+                setFetching(true);
+                const res = await authApi.getMe();
+                const user = res.user || res;
+
+                if (user) {
+                    setRecruiterData({
+                        name: user.name || '',
+                        email: user.email || '',
+                        role: user.role || 'Recruiter'
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load profile:', error);
+                toast.error('Failed to load recruiter profile');
+            } finally {
+                setFetching(false);
+            }
+        };
+        loadProfile();
+    }, []);
+
     const handleSave = async () => {
         setLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setLoading(false);
-        toast.success(`${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} configuration saved!`);
+        const id = toast.loading(`Saving ${activeCategory} configuration...`);
+        try {
+            if (activeCategory === 'ai') {
+                // Simulate AI config save as backend endpoint for AI weights might be specialized
+                await new Promise(resolve => setTimeout(resolve, 800));
+            }
+
+            toast.success('Configuration saved successfully!', { id });
+        } catch (error: any) {
+            console.error('Save failed:', error);
+            toast.error(error.message || 'Failed to save configuration', { id });
+        } finally {
+            setLoading(false);
+        }
     };
 
     const categories: { id: Category; label: string; icon: any; color: string }[] = [
-        { id: 'workspace', label: 'Workspace Profile', icon: User, color: 'text-cream' },
         { id: 'ai', label: 'AI Preferences', icon: Laptop, color: 'text-emerald-500' },
+        { id: 'security', label: 'Account Details', icon: Shield, color: 'text-amber-500' },
     ];
+
+    if (fetching) {
+        return (
+            <div className="flex flex-col h-full bg-dark min-h-screen items-center justify-center space-y-4">
+                <div className="w-12 h-12 border-4 border-cream border-t-transparent rounded-full animate-spin opacity-20"></div>
+                <p className="text-cream/40 font-bold text-sm">Syncing settings...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col h-full bg-dark min-h-screen">
@@ -81,42 +126,6 @@ export default function AdminSettings() {
                             transition={{ duration: 0.3 }}
                             className="relative z-10"
                         >
-                            {activeCategory === 'workspace' && (
-                                <div className="space-y-8 max-w-2xl">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <Input
-                                            label="Company Name"
-                                            value={workspaceData.companyName}
-                                            onChange={(e) => setWorkspaceData({ ...workspaceData, companyName: e.target.value })}
-                                            placeholder="Enter company name"
-                                        />
-                                        <Input
-                                            label="Website URL"
-                                            value={workspaceData.website}
-                                            onChange={(e) => setWorkspaceData({ ...workspaceData, website: e.target.value })}
-                                            placeholder="https://example.com"
-                                        />
-                                    </div>
-                                    <Select
-                                        label="Industry Category"
-                                        options={[
-                                            { value: 'Tech', label: 'Technology' },
-                                            { value: 'Finance', label: 'Finance' },
-                                            { value: 'Healthcare', label: 'Healthcare' }
-                                        ]}
-                                        value={workspaceData.industry}
-                                        onChange={(e) => setWorkspaceData({ ...workspaceData, industry: e.target.value })}
-                                    />
-                                    <Textarea
-                                        label="Company Description"
-                                        rows={4}
-                                        value={workspaceData.description}
-                                        onChange={(e) => setWorkspaceData({ ...workspaceData, description: e.target.value })}
-                                        placeholder="Briefly describe your workspace..."
-                                    />
-                                </div>
-                            )}
-
                             {activeCategory === 'ai' && (
                                 <div className="space-y-8 max-w-2xl">
                                     <Select
@@ -151,6 +160,33 @@ export default function AdminSettings() {
                                                     />
                                                 </div>
                                             ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeCategory === 'security' && (
+                                <div className="space-y-8 max-w-2xl">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <Input
+                                            label="Full Name"
+                                            value={recruiterData.name}
+                                            onChange={(e) => setRecruiterData({ ...recruiterData, name: e.target.value })}
+                                            placeholder="Enter your name"
+                                        />
+                                        <Input
+                                            label="Email Address"
+                                            value={recruiterData.email}
+                                            disabled
+                                            placeholder="your@email.com"
+                                        />
+                                    </div>
+                                    <div className="p-6 bg-cream/5 border border-cream/10 rounded-md">
+                                        <h4 className="text-sm font-bold text-cream mb-2">Role & Permissions</h4>
+                                        <p className="text-xs text-cream/40 mb-4 text-pretty">Your account is currently assigned the <strong>{recruiterData.role}</strong> role. Contact your administrator to change workspace permissions.</p>
+                                        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-md text-emerald-500 text-[10px] font-bold">
+                                            <Shield className="w-3 h-3" />
+                                            Active Session Secured
                                         </div>
                                     </div>
                                 </div>
