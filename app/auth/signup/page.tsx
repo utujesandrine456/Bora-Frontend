@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, ChevronLeft } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { authApi } from '@/lib/api/auth';
@@ -32,13 +32,29 @@ export default function SignupPage() {
             return toast.error('You must agree to the Terms of Use');
         }
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            return toast.error('Please enter a valid email address');
+        }
+
+        if (formData.password.length < 6) {
+            return toast.error('Password must be at least 6 characters long');
+        }
+
         setLoading(true);
         try {
-            await authApi.register({
+            console.log('Sending registration request:', {
                 name: formData.name,
                 email: formData.email,
-                password: formData.password
+                role: 'recruiter'
             });
+            const response = await authApi.register({
+                name: formData.name,
+                email: formData.email,
+                password: formData.password,
+                role: 'recruiter'
+            });
+            console.log('Registration response:', response);
             toast.success('Account created successfully!');
             router.push('/auth/login');
         } catch (error: unknown) {
@@ -137,7 +153,10 @@ export default function SignupPage() {
                         </Link>
                     </div>
 
-                    <div className="mb-12">
+                    <div className="mb-8">
+                        <Link href="/" className="text-cream/40 hover:text-cream text-xs font-bold flex items-center gap-2 mb-6 transition-colors">
+                            <ChevronLeft className="w-4 h-4" /> Back to Home
+                        </Link>
                         <motion.h2
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}

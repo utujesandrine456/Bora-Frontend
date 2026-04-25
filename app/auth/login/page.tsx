@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Lock, Mail, ChevronLeft } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { authApi } from '@/lib/api/auth';
@@ -137,7 +137,10 @@ export default function LoginPage() {
                         </Link>
                     </div>
 
-                    <div className="mb-12">
+                    <div className="mb-8">
+                        <Link href="/" className="text-cream/40 hover:text-cream text-xs font-bold flex items-center gap-2 mb-6 transition-colors">
+                            <ChevronLeft className="w-4 h-4" /> Back to Home
+                        </Link>
                         <motion.h2
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}

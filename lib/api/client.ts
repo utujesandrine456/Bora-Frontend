@@ -41,10 +41,12 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
 
     if (status === 401) {
-      console.warn('Axios Interceptor: 401 detected. Clearing token and redirecting to login.');
+      console.warn('Axios Interceptor: 401 detected. Clearing token.');
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
-        if (!window.location.pathname.includes('/auth/login')) {
+        const isPublicPage = window.location.pathname === '/' || window.location.pathname.startsWith('/auth/');
+        if (!isPublicPage) {
+          console.warn('Redirecting to login from private page.');
           window.location.href = '/auth/login?reason=session_expired';
         }
       }
