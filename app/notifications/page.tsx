@@ -8,11 +8,14 @@ import {
     MessageSquare,
     UserPlus,
     AlertCircle,
-    CheckCircle2
+    CheckCircle2,
+    Trash2,
+    CheckSquare
 } from 'lucide-react';
 import TopNav from '@/components/TopNav';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import toast from 'react-hot-toast';
 
 import { notificationsApi, Notification } from '@/lib/api/notifications';
 
@@ -98,9 +101,23 @@ export default function NotificationsPage() {
         if (!id) return;
         try {
             await notificationsApi.deleteNotification(id);
+            toast.success('Notification deleted');
             await loadNotifications();
         } catch (e) {
             console.error('Failed to delete notification:', e);
+            toast.error('Failed to delete notification');
+        }
+    };
+
+    const deleteAllNotifications = async () => {
+        if (!window.confirm('Are you sure you want to delete all notifications? This action cannot be undone.')) return;
+        try {
+            await notificationsApi.deleteAll();
+            toast.success('All notifications deleted');
+            await loadNotifications();
+        } catch (e) {
+            console.error('Failed to delete all notifications:', e);
+            toast.error('Failed to delete all notifications');
         }
     };
 
@@ -123,9 +140,16 @@ export default function NotificationsPage() {
                         <p className="text-cream/60 font-medium text-md italic serif">Stay updated on your platform activities and candidate pipelines.</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Button variant="secondary" className="gap-2" onClick={markAllAsRead}>
-                            <Check className="w-4 h-4" /> Mark all as read
-                        </Button>
+                        {notifications.length > 0 && (
+                            <>
+                                <Button variant="secondary" className="gap-2 border-red-500/20 text-red-500 hover:bg-red-500/10" onClick={deleteAllNotifications}>
+                                    <Trash2 className="w-4 h-4" /> Delete all
+                                </Button>
+                                <Button variant="secondary" className="gap-2" onClick={markAllAsRead}>
+                                    <CheckSquare className="w-4 h-4" /> Mark all as read
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -169,16 +193,23 @@ export default function NotificationsPage() {
                                         </span>
                                     </div>
 
-                                    <div className="shrink-0 flex items-center gap-2 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="shrink-0 flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                                         {!notification.read && (
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); toggleReadStatus(notification.id, notification.read); }}
-                                                className="p-2 hover:bg-cream/10 rounded-md text-emerald-500 hover:text-emerald-400 transition-colors"
+                                                className="p-2 hover:bg-emerald-500/10 rounded-md text-emerald-500 hover:text-emerald-400 transition-colors"
                                                 title="Mark as read"
                                             >
                                                 <CheckCircle2 className="w-4 h-4" />
                                             </button>
                                         )}
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); deleteNotification(notification.id); }}
+                                            className="p-2 hover:bg-red-500/10 rounded-md text-red-500/60 hover:text-red-500 transition-colors"
+                                            title="Delete notification"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 </div>
                             </Card>

@@ -33,8 +33,8 @@ export default function TopNav() {
 
       // 2. Load Notifications Count
       try {
-        const notes = await notificationsApi.getNotifications();
-        setUnreadCount(notes.filter(n => !n.read).length);
+        const count = await notificationsApi.getUnreadCount();
+        setUnreadCount(count);
       } catch (error) {
         console.error('TopNav: Failed to fetch notifications:', error);
       }
